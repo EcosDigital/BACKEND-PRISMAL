@@ -1,0 +1,29 @@
+# Binarios generados
+/dist/
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Archivos de configuración locales
+.env
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Cachés y directorios temporales
+*.tmp
+*.temp
+*.swp
+*.DS_Store
+
+.vscode/
+.idea/
+*.iml
+
+# Carpeta de uploads (archivos subidos por usuarios)
+src/public/uploads/

@@ -1,0 +1,85 @@
+package referenciales
+
+import (
+	"gorm.io/gorm"
+)
+
+func GetTipoPersona(db *gorm.DB) ([]TipoPersonaDB, error) {
+	return ListTipoPersona(db)
+}
+
+func GetTipoDocumento(db *gorm.DB) ([]TipoDocumentoDB, error) {
+	return ListTipoDocument(db)
+}
+
+func GetGeneros(db *gorm.DB) ([]GeneroDB, error) {
+	return ListGenero(db)
+}
+
+func GetDepartamentos(db *gorm.DB) ([]DepartamentoDB, error) {
+	return ListDepartament(db)
+}
+
+func GetMunicipios(db *gorm.DB, id_dep int) ([]MunicipiosDB, error) {
+	return ListMunicipio(db, id_dep)
+}
+
+func GetZonaRurales(db *gorm.DB) ([]ZonaRuralesDB, error) {
+	return ListZonaRurales(db)
+}
+
+func GetActividadesEco(db *gorm.DB) ([]ActividadesEconomicas, error) {
+	return ListActividades(db)
+}
+
+func GetAmbitosTerceros(db *gorm.DB) ([]AmbitosTerceros, error) {
+	return ListAmbitosTerceros(db)
+}
+
+func GetCentralizaciones(db *gorm.DB) ([]Centralizaciones, error) {
+	return ListCentralizaciones(db)
+}
+
+func GetResponsabilidadDian(db *gorm.DB) ([]ResponsabilidadDian, error) {
+	return ListResponsabilidadesDian(db)
+}
+
+func GetTipoContribuyente(db *gorm.DB) ([]TipoContribuyente, error) {
+	return ListTipoContribuyente(db)
+}
+
+func GetRegimenIva(db *gorm.DB) ([]RegimenIva, error) {
+	return ListRegimenIva(db)
+}
+
+func GetRegimenDian(db *gorm.DB) ([]RegimenDian, error) {
+	return ListRegimenDian(db)
+}
+
+func GetClaseTercero(db *gorm.DB) ([]ClasePersonas, error) {
+	return ListClaseTercero(db)
+}
+
+func GetEstadoModule() ([]EstadoModulo, error) {
+	return ListEstadoModule()
+}
+
+func GetTipoEmpresa(db *gorm.DB) ([]TipoEmpresa, error) {
+	return ListTipoEmpresa(db)
+}
+
+func GetPaises(db *gorm.DB) ([]Paises, error) {
+	return ListPaises(db)
+}
+
+func GetNaturalezaEmpresa(db *gorm.DB) ([]NaturalezaEmpresa, error) {
+	return ListNaturalezaEmpresa(db)
+}
+
+func GetTipoSede(db *gorm.DB) ([]TipoSede, error) {
+	return ListTipoSedes(db)
+}
+
+func GetTipoRol(db *gorm.DB) ([]TipoRol, error) {
+	return ListTipoRoles(db)
+}

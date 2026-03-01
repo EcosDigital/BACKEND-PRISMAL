@@ -1,0 +1,42 @@
+package search
+
+import (
+	"net/http"
+
+	"github.com/ecosistema/core/src/database"
+	"github.com/ecosistema/core/src/shared/logging"
+	"github.com/ecosistema/core/src/shared/middlewares"
+	"github.com/gofiber/fiber/v2"
+)
+
+func FindDataDynamicsController(c *fiber.Ctx) error {
+
+	var req SearchDynamics
+
+	//parsear JSON de la request
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"Error": "Json invalido",
+		})
+	}
+
+	req.UserID = int64(middlewares.GetUserID(c))
+	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
+	req.SedeID = int64(middlewares.GetSedeID(c))
+
+	results, err := FilterDynamic(database.DB, req)
+	if err != nil {
+
+		logging.Error.Printf("Hubo un error: %v", err)
+
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	//response
+	return c.Status(http.StatusCreated).JSON(fiber.Map{
+		"data": results,
+	})
+
+}

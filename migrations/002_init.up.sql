@@ -1,0 +1,34 @@
+
+INSERT INTO configuracion.ref_departamentos VALUES (2, 8, 'ATLANTICO');
+INSERT INTO configuracion.ref_departamentos VALUES (3, 11, 'BOGOTA');
+INSERT INTO configuracion.ref_departamentos VALUES (4, 13, 'BOLIVAR');
+INSERT INTO configuracion.ref_departamentos VALUES (5, 15, 'BOYACA');
+INSERT INTO configuracion.ref_departamentos VALUES (6, 17, 'CALDAS');
+INSERT INTO configuracion.ref_departamentos VALUES (7, 18, 'CAQUETA');
+INSERT INTO configuracion.ref_departamentos VALUES (8, 19, 'CAUCA');
+INSERT INTO configuracion.ref_departamentos VALUES (9, 20, 'CESAR');
+INSERT INTO configuracion.ref_departamentos VALUES (10, 23, 'CORDOBA');
+INSERT INTO configuracion.ref_departamentos VALUES (11, 25, 'CUNDINAMARCA');
+INSERT INTO configuracion.ref_departamentos VALUES (12, 27, 'CHOCO');
+INSERT INTO configuracion.ref_departamentos VALUES (13, 41, 'HUILA');
+INSERT INTO configuracion.ref_departamentos VALUES (14, 44, 'LA GUAJIRA');
+INSERT INTO configuracion.ref_departamentos VALUES (15, 47, 'MAGDALENA');
+INSERT INTO configuracion.ref_departamentos VALUES (16, 50, 'META');
+INSERT INTO configuracion.ref_departamentos VALUES (17, 52, 'NARIÑO');
+INSERT INTO configuracion.ref_departamentos VALUES (18, 54, 'NORTE SANTANDER');
+INSERT INTO configuracion.ref_departamentos VALUES (19, 63, 'QUINDIO');
+INSERT INTO configuracion.ref_departamentos VALUES (20, 66, 'RISARALDA');
+INSERT INTO configuracion.ref_departamentos VALUES (21, 68, 'SANTANDER');
+INSERT INTO configuracion.ref_departamentos VALUES (22, 70, 'SUCRE');
+INSERT INTO configuracion.ref_departamentos VALUES (23, 73, 'TOLIMA');
+INSERT INTO configuracion.ref_departamentos VALUES (24, 76, 'VALLE');
+INSERT INTO configuracion.ref_departamentos VALUES (25, 81, 'ARAUCA');
+INSERT INTO configuracion.ref_departamentos VALUES (26, 85, 'CASANARE');
+INSERT INTO configuracion.ref_departamentos VALUES (27, 86, 'PUTUMAYO');
+INSERT INTO configuracion.ref_departamentos VALUES (28, 88, 'SAN ANDRES');
+INSERT INTO configuracion.ref_departamentos VALUES (29, 91, 'AMAZONAS');
+INSERT INTO configuracion.ref_departamentos VALUES (30, 94, 'GUAINIA');
+INSERT INTO configuracion.ref_departamentos VALUES (31, 95, 'GUAVIARE');
+INSERT INTO configuracion.ref_departamentos VALUES (32, 97, 'VAUPES');
+INSERT INTO configuracion.ref_departamentos VALUES (33, 99, 'VICHADA');
+
