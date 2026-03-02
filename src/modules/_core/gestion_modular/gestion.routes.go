@@ -57,6 +57,9 @@ func Rutas_Modular(r fiber.Router) {
 
 	protected.Get("/module/user/all", FindAllModuleController)
 
+	//ADD
+	protected.Get("/modules/rol", FindModulesByRolController)
+
 	/*FUNCION FOR FUNCION*/
 	protected.Post("/mod/funcion",
 		middlewares.VallidateBody(&FuncionRequest{}), CreateFuncionController)

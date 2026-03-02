@@ -64,7 +64,7 @@ func RegisterConfigRoles(db *gorm.DB, req *ConfigRolRequest) (int64, error) {
 
 	//insertar sedes
 	if len(req.Sedes) > 0 {
-		if err := AddSedesRolUser(db, req.IDRol, req.Sedes, req.UserID); err != nil {
+		if err := AddSedesRolUser(db, req.IDRol, req.Sedes, req.UserID, req.Json); err != nil {
 			return 0, err
 		}
 	}

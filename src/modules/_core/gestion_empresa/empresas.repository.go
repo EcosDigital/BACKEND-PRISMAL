@@ -231,7 +231,7 @@ func ListSedeByCode(db *gorm.DB, codigo string) ([]SedeResponse, error) {
 }
 
 func ListSedeLast(db *gorm.DB) ([]SedeResponse, error) {
-	var results []SedeResponse
+	results := make([]SedeResponse, 0)
 
 	err := db.
 		Table("configuracion.cfg_sedes s").

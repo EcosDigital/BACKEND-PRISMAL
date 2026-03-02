@@ -54,6 +54,10 @@ func EnrichContext(c *fiber.Ctx) error {
 		c.Locals("sedeID", *claims.SedeID)
 	}
 
+	if claims.RolID != nil {
+		c.Locals("RolID", *claims.RolID)
+	}
+
 	return c.Next()
 
 }

@@ -2,10 +2,12 @@ package roles
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	empresa "github.com/ecosistema/core/src/modules/_core/gestion_empresa"
+	"github.com/ecosistema/core/src/shared/logging"
 	"gorm.io/gorm"
 )
 
@@ -81,7 +83,7 @@ func ListRolUsuarioByID(db *gorm.DB, id int64) ([]RolesResponse, error) {
 			r.nombre,
 			r.id_tipo,
 			tr.nombre as tipo,
-			r.intento_login,
+			r.intentos_login,
 			r.is_multisession,
 			r.is_externo`).
 		Joins("INNER JOIN seguridad.ref_tipo_rol tr ON tr.id = r.id_tipo").
@@ -133,7 +135,7 @@ func UpdateRolUsuario(db *gorm.DB, id int64, req *RolesRequest) (int64, error) {
 
 //** CONFIG ROLES * //
 
-func AddSedeRol(db *gorm.DB, idRol int, idSede int, idUser int64) error {
+func AddSedeRol(db *gorm.DB, idRol int, idSede int, idUser int64, jsonModules []Item) error {
 
 	sedes, err := empresa.ListSedeByID(db, int64(idSede))
 	if err != nil {
@@ -146,24 +148,31 @@ func AddSedeRol(db *gorm.DB, idRol int, idSede int, idUser int64) error {
 
 	sede := sedes[0]
 
-	data := map[string]interface{}{
-		"id_empresa": sede.IdEmpresa,
-		"id_sede":    idSede,
-		"id_rol":     idRol,
-		"created_by": idUser,
-		"created_at": time.Now(),
+	//serializar el json
+	jsonBytes, err := json.Marshal(jsonModules)
+	if err != nil {
+		logging.Error.Printf("error al serializar json_modules: %w", err)
 	}
 
-	tx := db.Table("seguridad.cfg_sedes_usuario").
+	data := map[string]interface{}{
+		"id_empresa":   sede.IdEmpresa,
+		"id_sede":      idSede,
+		"id_rol":       idRol,
+		"json_modules": string(jsonBytes),
+		"created_by":   idUser,
+		"created_at":   time.Now(),
+	}
+
+	tx := db.Table("seguridad.cfg_sedes_roles").
 		Create(&data).Error
 
 	return tx
 
 }
 
-func AddSedesRolUser(db *gorm.DB, idRol int, sedes []int, idUser int64) error {
+func AddSedesRolUser(db *gorm.DB, idRol int, sedes []int, idUser int64, jsonModules []Item) error {
 	for _, IdSede := range sedes {
-		err := AddSedeRol(db, idRol, IdSede, idUser)
+		err := AddSedeRol(db, idRol, IdSede, idUser, jsonModules)
 		if err != nil {
 			return err
 		}

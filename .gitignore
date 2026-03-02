@@ -9,6 +9,7 @@
 
 # Archivos de configuración locales
 .env
+.multi.env
 .env.*.local
 
 # Logs

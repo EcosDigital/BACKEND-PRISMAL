@@ -24,8 +24,4 @@ func Rutas_seguridad(r fiber.Router) {
 
 	api.Get("/verifyToken", VerifyTokenController)
 
-	/* TEMPORAL: Endpoint de debugging
-	api.Get("/auth/debug/sessions",
-		controller_seguridad.DebugSessionsController) */
-
 }

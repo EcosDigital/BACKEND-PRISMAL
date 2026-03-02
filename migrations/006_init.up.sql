@@ -132,14 +132,13 @@ CREATE TABLE IF NOT EXISTS seguridad.cfg_empresas_roles(
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-INSERT INTO seguridad.cfg_empresas_roles (id_empresa, id_rol, created_by, created_at)
-    VALUES(1, 1, 1, NOW());
 
 CREATE TABLE IF NOT EXISTS seguridad.cfg_sedes_roles(
     id SERIAL PRIMARY KEY,
     id_empresa INT NOT NULL REFERENCES configuracion.cfg_empresas(id),
     id_sede INT NOT NULL REFERENCES configuracion.cfg_sedes(id),
     id_rol INT NOT NULL REFERENCES seguridad.cfg_roles_usuario(id),
+    json_modules JSONB NOT NULL,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );

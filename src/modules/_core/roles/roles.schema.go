@@ -21,10 +21,21 @@ type RolesResponse struct {
 	IsExterno      *bool  `json:"is_externo"`
 }
 
+type Item struct {
+	ID       *int    `json:"id"`
+	Title    *string `json:"title"`
+	Icon     *string `json:"icon,omitempty"`
+	Path     string  `json:"path,omitempty"`
+	BgColor  *string `json:"bg_color,omitempty"`
+	BrColor  *string `json:"br_color,omitempty"`
+	Children []Item  `json:"children,omitempty"` // corregir typo cuando puedas
+}
+
 type ConfigRolRequest struct {
-	IDRol     int   `json:"id_rol"`
-	Sedes     []int `json:"sedes"`
-	UserID    int64 `json:"user_id"`
-	EmpresaID int64 `json:"empresa_id"`
-	SedeID    int64 `json:"sede_id"`
+	IDRol     int    `json:"id_rol"`
+	Sedes     []int  `json:"sedes"`
+	Json      []Item `json:"json"`
+	UserID    int64  `json:"user_id"`
+	EmpresaID int64  `json:"empresa_id"`
+	SedeID    int64  `json:"sede_id"`
 }

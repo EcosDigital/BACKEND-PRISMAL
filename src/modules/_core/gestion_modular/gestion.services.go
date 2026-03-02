@@ -253,3 +253,7 @@ func FilterSubByIDFunc(db *gorm.DB, id int64) ([]SubFuncionesRequest, error) {
 func FilterModulesByCodeLicence(codigo string) ([]ModuleResponse, error) {
 	return ListModulesByCodeLicence(codigo)
 }
+
+func FilterModulesByRol(db *gorm.DB, id int64) (*AccessReponse, error) {
+	return ListModuleByIdRol(db, id)
+}

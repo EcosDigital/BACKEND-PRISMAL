@@ -1,5 +1,7 @@
 package modular
 
+import "encoding/json"
+
 //** STRUCT'S FOR PRODUCTOS DE SOFTWARE **/
 
 type ProductRequest struct {
@@ -167,4 +169,10 @@ type SubFuncionesRequest struct {
 	UserID     int64  `json:"user_id" validate:"omitempty"`
 	EmpresaID  int64  `json:"empresa_id" validate:"omitempty"`
 	SedeID     int64  `json:"sede_id" validate:"omitempty"`
+}
+
+type AccessReponse struct {
+	ID         int             `json:"id"`
+	IDRol      int             `json:"id_rol"`
+	JsonAccess json.RawMessage `json:"json_access"`
 }

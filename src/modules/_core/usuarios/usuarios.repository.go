@@ -14,7 +14,7 @@ import (
 func ListUserLast(db *gorm.DB) ([]UserResp, error) {
 	var results []UserResp
 
-	err := database.GormDB.
+	err := db.
 		Table("seguridad.cfg_usuarios u").
 		Joins("INNER JOIN seguridad.cfg_roles_usuario r on u.id_rol = r.id").
 		Joins("INNER JOIN configuracion.cfg_terceros t on t.id = u.id_tercero").
@@ -113,7 +113,7 @@ func CreateUser(db *gorm.DB, req *UserRequest) (int64, error) {
 func ListUserById(db *gorm.DB, id int64) ([]UserResponseFull, error) {
 	var results []UserResponseFull
 
-	err := database.GormDB.
+	err := db.
 		Table("seguridad.cfg_usuarios u").
 		Joins("INNER JOIN seguridad.cfg_roles_usuario r on u.id_rol = r.id").
 		Joins("INNER JOIN configuracion.cfg_terceros t on t.id = u.id_tercero").

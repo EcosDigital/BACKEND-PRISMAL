@@ -773,3 +773,24 @@ func FindSubFuncionesByCodeLicence(c *fiber.Ctx) error {
 	return c.JSON(results)
 
 }
+
+func FindModulesByRolController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	RolID := int64(middlewares.GetRolID(c))
+
+	results, err := FilterModulesByRol(db, RolID)
+	if err != nil {
+		logging.Error.Printf("Hubo un error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(results)
+
+}

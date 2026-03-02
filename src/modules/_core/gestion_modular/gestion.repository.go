@@ -532,6 +532,24 @@ func ListModuleByIdProduct(db *gorm.DB, id int64) ([]ModuleResponse, error) {
 
 }
 
+func ListModuleByIdRol(db *gorm.DB, id int64) (*AccessReponse, error) {
+	var results *AccessReponse
+
+	err := db.
+		Table("seguridad.cfg_sedes_roles sr").
+		Select(`
+			sr.id,
+			sr.id_rol,
+			sr.json_modules as json_access`).
+		Where("sr.id_rol = ?", id).Limit(1).Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func UpdateModule(db *gorm.DB, req *ModuleUpdateRequest, id int64) (int64, error) {
 
 	data := map[string]interface{}{

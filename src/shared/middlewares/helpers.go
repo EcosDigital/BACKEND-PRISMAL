@@ -28,3 +28,11 @@ func GetSedeID(c *fiber.Ctx) int {
 	}
 	return sedeID
 }
+
+func GetRolID(c *fiber.Ctx) int {
+	sedeID, ok := c.Locals("RolID").(int)
+	if !ok {
+		logging.Error.Printf("Error suario no encontrado")
+	}
+	return sedeID
+}
