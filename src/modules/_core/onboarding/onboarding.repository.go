@@ -221,11 +221,12 @@ func ExecuteModuleMigrations(dbName string, moduleCode string) error {
 
 	//  Conectar a la BD del tenant
 	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=postgres sslmode=disable",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		core.Cfg.Db_host,
 		core.Cfg.Db_port,
 		core.Cfg.Db_user,
 		core.Cfg.Db_pass,
+		core.Cfg.Db_name,
 	)
 
 	db, err := sql.Open("postgres", dsn)
