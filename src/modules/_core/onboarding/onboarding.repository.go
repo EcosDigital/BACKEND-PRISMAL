@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ecosistema/core/src/core"
 	"github.com/ecosistema/core/src/database"
 	"gorm.io/gorm"
 )
@@ -220,8 +221,11 @@ func ExecuteModuleMigrations(dbName string, moduleCode string) error {
 
 	//  Conectar a la BD del tenant
 	dsn := fmt.Sprintf(
-		"host=localhost port=5432 user=postgres password=123 dbname=%s sslmode=disable",
-		dbName,
+		"host=%s port=%s user=%s password=%s dbname=postgres sslmode=disable",
+		core.Cfg.Db_host,
+		core.Cfg.Db_port,
+		core.Cfg.Db_user,
+		core.Cfg.Db_pass,
 	)
 
 	db, err := sql.Open("postgres", dsn)

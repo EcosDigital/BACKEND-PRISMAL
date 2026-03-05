@@ -1,6 +1,7 @@
 # Binarios generados
 /dist/
 /bin/
+/.bolt/
 *.exe
 *.exe~
 *.dll
@@ -11,6 +12,7 @@
 .env
 .multi.env
 .env.*.local
+.env.development
 
 # Logs
 *.log
