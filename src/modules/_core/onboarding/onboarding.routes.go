@@ -14,5 +14,6 @@ func Rutas_onBoarding(r fiber.Router) {
 
 	//buscar los modulos habiles para clientes que estan en produccion
 	api.Get("/modules", FindModuloByProduccionController)
+	api.Get("/check-domain", CheckDomainController)
 
 }

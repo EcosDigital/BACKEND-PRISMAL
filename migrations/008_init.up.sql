@@ -105,3 +105,6 @@ CREATE TABLE IF NOT EXISTS configuracion.cfg_detalle_subfunciones(
     id_empresa INT NOT NULL,
     id_sede INT NULL
 );
+
+INSERT INTO seguridad.cfg_empresas_roles (id_empresa, id_rol, created_by, created_at)
+VALUES (1, 1, 1, NOW());

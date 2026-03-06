@@ -11,5 +11,3 @@ WITH inserted_empresa AS (
     )
     RETURNING id
 )
-INSERT INTO seguridad.cfg_empresas_roles (id_empresa, id_rol, created_by, created_at)
-SELECT id, 1, 1, NOW() FROM inserted_empresa;

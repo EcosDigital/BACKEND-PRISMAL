@@ -393,3 +393,12 @@ func AddBaseModulesToLicence(licenceID int64) error {
 	baseCodes := []string{"MD-001", "MD-002"}
 	return AddModulesLicence(licenceID, baseCodes)
 }
+
+func CheckDomainAvailable(dominio string) (bool, error) {
+	var count int64
+	err := database.GormDB.
+		Table("configuracion.cfg_tenants").
+		Where("dominio = ?", strings.ToLower(strings.TrimSpace(dominio))).
+		Count(&count).Error
+	return count == 0, err
+}

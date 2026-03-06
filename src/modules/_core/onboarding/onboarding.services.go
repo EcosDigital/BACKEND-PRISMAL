@@ -19,6 +19,16 @@ func BoolPtr(b bool) *bool {
 }
 
 func RegisterTenantOnboarding(db *gorm.DB, req *TenantRequest) (int64, error) {
+
+	//0 validar disponibilidad dominio
+	domain, err := CheckDomain(req.Empresa.Subdominio)
+	if err != nil {
+		return 0, fmt.Errorf("error verificando dominio: %v", err)
+	}
+	if !domain {
+		return 0, errors.New("el dominio ya está en uso por otro tenant")
+	}
+
 	// 1 validar existencia por NIT
 	exists, err := terceros.FindTerceroByDocument(db, req.Empresa.Nit)
 	if err != nil {
@@ -56,8 +66,7 @@ func RegisterTenantOnboarding(db *gorm.DB, req *TenantRequest) (int64, error) {
 	}
 
 	// 5 CREAR BASE DE DATOS TENANT
-	words := strings.Fields(req.Empresa.RazonSocial)
-	dbSlug := strings.ToLower(words[0])
+	dbSlug := slug.Make(strings.ToLower(req.Empresa.Subdominio))
 	dbName := fmt.Sprintf("prismar_%s", dbSlug)
 
 	if err := CreateTenantDB(dbSlug); err != nil {
@@ -185,4 +194,8 @@ func RegisterTenantOnboarding(db *gorm.DB, req *TenantRequest) (int64, error) {
 
 func FilterModulosProduccion(db *gorm.DB) ([]ModuleCatalogCategory, error) {
 	return ListModulosActiveProduccion(db)
+}
+
+func CheckDomain(codigo string) (bool, error) {
+	return CheckDomainAvailable(codigo)
 }

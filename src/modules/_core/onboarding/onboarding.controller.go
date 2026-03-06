@@ -62,3 +62,24 @@ func FindModuloByProduccionController(c *fiber.Ctx) error {
 	}
 	return c.JSON(modules)
 }
+
+func CheckDomainController(c *fiber.Ctx) error {
+	dominio := c.Query("dominio")
+	if dominio == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "dominio requerido",
+		})
+	}
+
+	available, err := CheckDomain(dominio)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "error verificando dominio",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"dominio":   dominio,
+		"available": available,
+	})
+}
