@@ -11,3 +11,4 @@ WITH inserted_empresa AS (
     )
     RETURNING id
 )
+SELECT id FROM inserted_empresa;

@@ -2,6 +2,7 @@ package modular
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/ecosistema/core/src/database"
@@ -362,23 +363,24 @@ func ListModuleByCode(db *gorm.DB, codigo string) ([]ModuleResponse, error) {
 func CreateModule(db *gorm.DB, req *ModuleRequest) (int64, error) {
 
 	data := map[string]interface{}{
-		"id_producto":  req.IDProduct,
-		"id_categoria": req.IDCategory,
-		"id_estado":    req.IdEstado,
-		"codigo":       req.Codigo,
-		"nombre":       req.Nombre,
-		"descripcion":  req.Descripcion,
-		"orden_lista":  req.Ordenista,
-		"es_interno":   req.EsInterno,
-		"color":        req.Color,
-		"bg_color":     req.BgColor,
-		"border_color": req.BorderColor,
-		"icono":        req.Icono,
-		"is_active":    req.IsActive,
-		"created_at":   time.Now(),
-		"created_by":   req.UserID,
-		"id_empresa":   req.EmpresaID,
-		"id_sede":      req.SedeID,
+		"id_producto":    req.IDProduct,
+		"id_categoria":   req.IDCategory,
+		"id_estado":      req.IdEstado,
+		"codigo":         req.Codigo,
+		"nombre":         req.Nombre,
+		"descripcion":    req.Descripcion,
+		"orden_lista":    req.Ordenista,
+		"es_interno":     req.EsInterno,
+		"color":          req.Color,
+		"bg_color":       req.BgColor,
+		"border_color":   req.BorderColor,
+		"icono":          req.Icono,
+		"migration_path": req.MigratioPath,
+		"is_active":      req.IsActive,
+		"created_at":     time.Now(),
+		"created_by":     req.UserID,
+		"id_empresa":     req.EmpresaID,
+		"id_sede":        req.SedeID,
 	}
 
 	tx := db.
@@ -389,9 +391,9 @@ func CreateModule(db *gorm.DB, req *ModuleRequest) (int64, error) {
 		return 0, tx.Error
 	}
 
-	id, ok := data["id"].(int64)
-	if !ok {
-		return 0, nil
+	var id int64
+	if err := db.Raw("SELECT lastval()").Scan(&id).Error; err != nil {
+		return 0, err
 	}
 
 	return id, nil
@@ -462,6 +464,31 @@ func ListModuleAll(db *gorm.DB) ([]ModuleResponse, error) {
 
 }
 
+func GetDependenciasByModulo(db *gorm.DB, idModulo int) ([]DependenciaItem, error) {
+	var results []DependenciaItem
+
+	err := db.
+		Table("configuracion.cfg_modulos_dependencias d").
+		Select(`
+            m.id,
+            m.codigo,
+            m.nombre
+        `).
+		Joins("INNER JOIN configuracion.cfg_modulos m ON m.id = d.id_modulo_dependencia").
+		Where("d.id_modulo = ?", idModulo).
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		return []DependenciaItem{}, nil
+	}
+
+	return results, nil
+}
+
 func ListModuleById(db *gorm.DB, id int64) ([]ModuleResponse, error) {
 
 	var results []ModuleResponse
@@ -478,6 +505,7 @@ func ListModuleById(db *gorm.DB, id int64) ([]ModuleResponse, error) {
 			m.id_estado,
 			m.nombre,
 			m.descripcion,
+			m.migration_path,
 			m.color,
 			m.bg_color,
 			m.border_color,
@@ -491,6 +519,15 @@ func ListModuleById(db *gorm.DB, id int64) ([]ModuleResponse, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	// Cargar dependencias por cada módulo
+	for i := range results {
+		deps, err := GetDependenciasByModulo(db, results[i].ID)
+		if err != nil {
+			return nil, err
+		}
+		results[i].Dependencias = deps
 	}
 
 	return results, nil
@@ -550,23 +587,44 @@ func ListModuleByIdRol(db *gorm.DB, id int64) (*AccessReponse, error) {
 	return results, nil
 }
 
+func AddDependencias(db *gorm.DB, idModulo int64, dependencias []int, id int64) error {
+
+	for _, idDep := range dependencias {
+
+		data := map[string]interface{}{
+			"id_modulo":             idModulo,
+			"id_modulo_dependencia": idDep,
+			"created_by":            id,
+			"created_at":            time.Now(),
+		}
+
+		err := db.Table("configuracion.cfg_modulos_dependencias").Create(&data).Error
+		if err != nil {
+			return fmt.Errorf("error insertando dependencia %d: %v", idDep, err)
+		}
+
+	}
+	return nil
+}
+
 func UpdateModule(db *gorm.DB, req *ModuleUpdateRequest, id int64) (int64, error) {
 
 	data := map[string]interface{}{
-		"id_producto":  req.IDProduct,
-		"id_estado":    req.IdEstado,
-		"nombre":       req.Nombre,
-		"descripcion":  req.Descripcion,
-		"orden_lista":  req.Ordenista,
-		"es_interno":   req.EsInterno,
-		"color":        req.Color,
-		"bg_color":     req.BgColor,
-		"border_color": req.BorderColor,
-		"icono":        req.Icono,
-		"id_empresa":   req.EmpresaID,
-		"id_sede":      req.SedeID,
-		"update_at":    time.Now(),
-		"update_by":    req.UserID,
+		"id_producto":    req.IDProduct,
+		"id_estado":      req.IdEstado,
+		"nombre":         req.Nombre,
+		"descripcion":    req.Descripcion,
+		"orden_lista":    req.Ordenista,
+		"es_interno":     req.EsInterno,
+		"color":          req.Color,
+		"bg_color":       req.BgColor,
+		"border_color":   req.BorderColor,
+		"icono":          req.Icono,
+		"migration_path": req.MigratioPath,
+		"id_empresa":     req.EmpresaID,
+		"id_sede":        req.SedeID,
+		"update_at":      time.Now(),
+		"update_by":      req.UserID,
 	}
 
 	if req.IDCategory != 0 {
@@ -592,6 +650,26 @@ func UpdateModule(db *gorm.DB, req *ModuleUpdateRequest, id int64) (int64, error
 
 	return id, nil
 
+}
+
+func SyncDependencias(db *gorm.DB, idModulo int64, dependencias []int, id int64) error {
+
+	//Borrar dependencias actuales
+	err := db.Table("configuracion.cfg_modulos_dependencias").
+		Where("id_modulo = ?", idModulo).
+		Delete(nil).Error
+	if err != nil {
+		return fmt.Errorf("error eliminando dependencias anteriores: %v", err)
+	}
+
+	// Insertar las nuevas si vienen
+	if len(dependencias) > 0 {
+		if err := AddDependencias(db, idModulo, dependencias, id); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 /** START OPERACIONES CRUD FUNCION */

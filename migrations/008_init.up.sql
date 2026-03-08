@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS configuracion.cfg_modulos(
     bg_color VARCHAR(50) NULL,
     border_color VARCHAR(50) NULL,
     icono VARCHAR(150) NULL,
+    migration_path VARCHAR(300) NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT NOW(),
     update_at TIMESTAMP,
@@ -60,6 +61,16 @@ CREATE TABLE IF NOT EXISTS configuracion.cfg_modulos(
     update_by INT,
     id_empresa INT NOT NULL,
     id_sede INT NULL
+);
+
+CREATE TABLE IF NOT EXISTS configuracion.cfg_modulos_dependencias(
+    id SERIAL PRIMARY KEY,
+    id_modulo INT NOT NULL REFERENCES configuracion.cfg_modulos(id),
+    id_modulo_dependencia INT NOT NULL REFERENCES configuracion.cfg_modulos(id),
+    created_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT uix_modulo_dependencia UNIQUE (id_modulo, id_modulo_dependencia),
+    CONSTRAINT chk_no_auto_dependencia CHECK (id_modulo <> id_modulo_dependencia)
 );
 
 CREATE TABLE IF NOT EXISTS configuracion.cfg_funciones(
@@ -106,5 +117,3 @@ CREATE TABLE IF NOT EXISTS configuracion.cfg_detalle_subfunciones(
     id_sede INT NULL
 );
 
-INSERT INTO seguridad.cfg_empresas_roles (id_empresa, id_rol, created_by, created_at)
-VALUES (1, 1, 1, NOW());

@@ -1,9 +1,13 @@
 package comprobantes
 
-import "errors"
+import (
+	"errors"
 
-func RegisterComprobante(req *ComprobanteRequest) (int64, error) {
-	regID, err := CreateComprobante(req)
+	"gorm.io/gorm"
+)
+
+func RegisterComprobante(db *gorm.DB, req *ComprobanteRequest) (int64, error) {
+	regID, err := CreateComprobante(db, req)
 	if err != nil {
 		return 0, err
 	}
@@ -11,18 +15,18 @@ func RegisterComprobante(req *ComprobanteRequest) (int64, error) {
 	return regID, err
 }
 
-func FilterLastComprobantes() ([]ComprobanteResponse, error) {
-	return ListComprobantesLast()
+func FilterLastComprobantes(db *gorm.DB) ([]ComprobanteResponse, error) {
+	return ListComprobantesLast(db)
 }
 
-func FilterComprobanteByID(id int64) ([]ComprobanteResponse, error) {
-	return ListComprobanteById(id)
+func FilterComprobanteByID(db *gorm.DB, id int64) ([]ComprobanteResponse, error) {
+	return ListComprobanteById(db, id)
 }
 
-func EditComprobante(id int64, req *ComprobanteUpdateRequest) (int64, error) {
+func EditComprobante(db *gorm.DB, id int64, req *ComprobanteUpdateRequest) (int64, error) {
 
 	//verificar registro por ID
-	exists, err := ListComprobanteById(id)
+	exists, err := ListComprobanteById(db, id)
 
 	if err != nil {
 		return 0, err
@@ -34,7 +38,7 @@ func EditComprobante(id int64, req *ComprobanteUpdateRequest) (int64, error) {
 	}
 
 	//actualizar registro
-	regID, err := EditComprobante(id, req)
+	regID, err := EditComprobante(db, id, req)
 	if err != nil {
 		return 0, err
 	}

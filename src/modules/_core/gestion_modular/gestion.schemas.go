@@ -75,58 +75,70 @@ type CategoryUpdateRequest struct {
 //** STRUCT'S FOR MODULES **/
 
 type ModuleRequest struct {
-	Codigo      string `json:"codigo" validate:"required,min=5,max=12"`
-	IDProduct   int    `json:"id_producto" validate:"required,gt=0"`
-	IDCategory  int    `json:"id_category" validate:"required,gt=0"`
-	Nombre      string `json:"nombre" validate:"required,min=3"`
-	Ordenista   int    `json:"orden_lista" validate:"required,gt=0"`
-	IdEstado    int    `json:"id_estado" validate:"required,gt=0"`
-	Color       string `json:"color" validate:"required,min=3"`
-	BgColor     string `json:"bg_color" validate:"required,min=3"`
-	BorderColor string `json:"border_color" validate:"required,min=3"`
-	Icono       string `json:"icono" validate:"required,min=3"`
-	Descripcion string `json:"descripcion" validate:"required,min=20"`
-	EsInterno   *bool  `json:"es_interno" validate:"required"`
-	IsActive    *bool  `json:"is_active" validate:"required"`
-	UserID      int64  `json:"user_id" validate:"omitempty"`
-	EmpresaID   int64  `json:"empresa_id" validate:"omitempty"`
-	SedeID      int64  `json:"sede_id" validate:"omitempty"`
+	Codigo       string `json:"codigo" validate:"required,min=5,max=12"`
+	IDProduct    int    `json:"id_producto" validate:"required,gt=0"`
+	IDCategory   int    `json:"id_category" validate:"required,gt=0"`
+	Nombre       string `json:"nombre" validate:"required,min=3"`
+	Ordenista    int    `json:"orden_lista" validate:"required,gt=0"`
+	IdEstado     int    `json:"id_estado" validate:"required,gt=0"`
+	Color        string `json:"color" validate:"required,min=3"`
+	BgColor      string `json:"bg_color" validate:"required,min=3"`
+	BorderColor  string `json:"border_color" validate:"required,min=3"`
+	Icono        string `json:"icono" validate:"required,min=3"`
+	Descripcion  string `json:"descripcion" validate:"required,min=20"`
+	MigratioPath string `json:"migration_path" validate:"omitempty"`
+	Dependencias []int  `json:"dependencias" validate:"omitempty"`
+	EsInterno    *bool  `json:"es_interno" validate:"required"`
+	IsActive     *bool  `json:"is_active" validate:"required"`
+	UserID       int64  `json:"user_id" validate:"omitempty"`
+	EmpresaID    int64  `json:"empresa_id" validate:"omitempty"`
+	SedeID       int64  `json:"sede_id" validate:"omitempty"`
+}
+
+type DependenciaItem struct {
+	ID     int    `json:"id"`
+	Codigo string `json:"codigo"`
+	Nombre string `json:"nombre"`
 }
 
 type ModuleResponse struct {
-	ID          int    `json:"id"`
-	IDProduct   int    `json:"id_producto"`
-	Producto    string `json:"producto"`
-	IDCategory  int    `json:"id_category" validate:"required,gt=0"`
-	Categoria   string `json:"categoria"`
-	Codigo      string `json:"codigo"`
-	IdEstado    int    `json:"id_estado" validate:"required,gt=0"`
-	Nombre      string `json:"nombre" validate:"required,min=3"`
-	Descripcion string `json:"descripcion" validate:"required,min=20"`
-	Color       string `json:"color" validate:"required,min=3"`
-	BgColor     string `json:"bg_color" validate:"required,min=3"`
-	BorderColor string `json:"border_color" validate:"required,min=3"`
-	Icono       string `json:"icono" validate:"required,min=3"`
-	IsActive    *bool  `json:"is_active" validate:"required"`
-	EsInterno   *bool  `json:"es_interno" validate:"required"`
+	ID            int               `json:"id"`
+	IDProduct     int               `json:"id_producto"`
+	Producto      string            `json:"producto"`
+	IDCategory    int               `json:"id_category" validate:"required,gt=0"`
+	Categoria     string            `json:"categoria"`
+	Codigo        string            `json:"codigo"`
+	IdEstado      int               `json:"id_estado" validate:"required,gt=0"`
+	Nombre        string            `json:"nombre" validate:"required,min=3"`
+	Descripcion   string            `json:"descripcion" validate:"required,min=20"`
+	MigrationPath string            `json:"migration_path"`
+	Color         string            `json:"color" validate:"required,min=3"`
+	BgColor       string            `json:"bg_color" validate:"required,min=3"`
+	BorderColor   string            `json:"border_color" validate:"required,min=3"`
+	Icono         string            `json:"icono" validate:"required,min=3"`
+	IsActive      *bool             `json:"is_active" validate:"required"`
+	EsInterno     *bool             `json:"es_interno" validate:"required"`
+	Dependencias  []DependenciaItem `json:"dependencias" gorm:"-"`
 }
 
 type ModuleUpdateRequest struct {
-	IDProduct   int    `json:"id_producto" validate:"required,gt=0"`
-	IDCategory  int    `json:"id_category" validate:"required,gt=0"`
-	IdEstado    int    `json:"id_estado" validate:"required,gt=0"`
-	Nombre      string `json:"nombre" validate:"required,min=3"`
-	Descripcion string `json:"descripcion" validate:"required,min=20"`
-	Ordenista   int    `json:"orden_lista" validate:"required,gt=0"`
-	EsInterno   *bool  `json:"es_interno" validate:"required"`
-	Color       string `json:"color" validate:"required,min=3"`
-	BgColor     string `json:"bg_color" validate:"required,min=3"`
-	BorderColor string `json:"border_color" validate:"required,min=3"`
-	Icono       string `json:"icono" validate:"required,min=3"`
-	IsActive    *bool  `json:"is_active" validate:"required"`
-	UserID      int64  `json:"user_id" validate:"omitempty"`
-	EmpresaID   int64  `json:"empresa_id" validate:"omitempty"`
-	SedeID      int64  `json:"sede_id" validate:"omitempty"`
+	IDProduct    int    `json:"id_producto" validate:"required,gt=0"`
+	IDCategory   int    `json:"id_category" validate:"required,gt=0"`
+	IdEstado     int    `json:"id_estado" validate:"required,gt=0"`
+	Nombre       string `json:"nombre" validate:"required,min=3"`
+	Descripcion  string `json:"descripcion" validate:"required,min=20"`
+	Ordenista    int    `json:"orden_lista" validate:"required,gt=0"`
+	EsInterno    *bool  `json:"es_interno" validate:"required"`
+	Color        string `json:"color" validate:"required,min=3"`
+	BgColor      string `json:"bg_color" validate:"required,min=3"`
+	BorderColor  string `json:"border_color" validate:"required,min=3"`
+	Icono        string `json:"icono" validate:"required,min=3"`
+	MigratioPath string `json:"migration_path" validate:"omitempty"`
+	Dependencias []int  `json:"dependencias" validate:"omitempty"`
+	IsActive     *bool  `json:"is_active" validate:"required"`
+	UserID       int64  `json:"user_id" validate:"omitempty"`
+	EmpresaID    int64  `json:"empresa_id" validate:"omitempty"`
+	SedeID       int64  `json:"sede_id" validate:"omitempty"`
 }
 
 type FuncionRequest struct {

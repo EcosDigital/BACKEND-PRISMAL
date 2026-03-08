@@ -171,20 +171,21 @@ func AddModulesLicence(licenceID int64, modulos []string) error {
 	return nil
 }
 
-func GetModuleMigrationPath(codigoModulo string) (string, error) {
+func GetDependenciasCodes(moduleID int) ([]string, error) {
+	var codes []string
 
-	//mapeo de rutas
-	modulePaths := map[string]string{
-		"MD-003": "src/modules/contabilidad/_migrations",
+	err := database.GormDB.
+		Table("configuracion.cfg_modulos_dependencias d").
+		Select("m.codigo").
+		Joins("INNER JOIN configuracion.cfg_modulos m ON m.id = d.id_modulo_dependencia").
+		Where("d.id_modulo = ? AND m.is_active = ?", moduleID, true).
+		Scan(&codes).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo dependencias: %v", err)
 	}
 
-	path, exists := modulePaths[codigoModulo]
-	if !exists {
-		return "", fmt.Errorf("código de módulo '%s' no tiene ruta configurada", codigoModulo)
-	}
-
-	return path, nil
-
+	return codes, nil
 }
 
 func GetModuleInfoByCode(code string) (*ModuleInfo, error) {
@@ -193,7 +194,7 @@ func GetModuleInfoByCode(code string) (*ModuleInfo, error) {
 
 	err := database.GormDB.
 		Table("configuracion.cfg_modulos").
-		Select("id, codigo as code, nombre as name").
+		Select("id, codigo as code, nombre as name, migration_path").
 		Where("codigo = ? AND is_active = ?", code, true).
 		First(&module).Error
 
@@ -205,18 +206,61 @@ func GetModuleInfoByCode(code string) (*ModuleInfo, error) {
 
 }
 
-func ExecuteModuleMigrations(dbName string, moduleCode string) error {
+func IsModuleInstalledInLicence(licenceID int64, moduleID int) (bool, error) {
+	var count int64
 
-	//obtener modulo data
-	moduleInfo, err := GetModuleInfoByCode(moduleCode)
-	if err != nil {
-		return err
+	err := database.GormDB.
+		Table("configuracion.mov_licencias_modulos").
+		Where("id_licencia = ? AND id_modulo = ?", licenceID, moduleID).
+		Count(&count).Error
+
+	return count > 0, err
+}
+
+func ResolveInstallOrder(requestedCodes []string) ([]string, error) {
+	visited := map[string]bool{}
+	ordered := []string{}
+
+	var resolve func(code string) error
+	resolve = func(code string) error {
+		if visited[code] {
+			return nil
+		}
+		visited[code] = true
+
+		module, err := GetModuleInfoByCode(code)
+		if err != nil {
+			return err
+		}
+
+		depCodes, err := GetDependenciasCodes(module.ID)
+		if err != nil {
+			return err
+		}
+
+		for _, depCode := range depCodes {
+			if err := resolve(depCode); err != nil {
+				return err
+			}
+		}
+
+		ordered = append(ordered, code)
+		return nil
 	}
 
-	//obtener ruta de las migratciones by code
-	migrationPath, err := GetModuleMigrationPath(moduleCode)
-	if err != nil {
-		return fmt.Errorf("error obteniendo ruta: %v", err)
+	for _, code := range requestedCodes {
+		if err := resolve(code); err != nil {
+			return nil, err
+		}
+	}
+
+	return ordered, nil
+}
+
+func ExecuteModuleMigrations(dbName string, moduleInfo *ModuleInfo) error {
+
+	if moduleInfo.MigrationPath == "" {
+		return fmt.Errorf("módulo '%s' no tiene migration_path configurado", moduleInfo.Name)
 	}
 
 	//  Conectar a la BD del tenant
@@ -226,7 +270,7 @@ func ExecuteModuleMigrations(dbName string, moduleCode string) error {
 		core.Cfg.Db_port,
 		core.Cfg.Db_user,
 		core.Cfg.Db_pass,
-		core.Cfg.Db_name,
+		dbName,
 	)
 
 	db, err := sql.Open("postgres", dsn)
@@ -239,14 +283,18 @@ func ExecuteModuleMigrations(dbName string, moduleCode string) error {
 		return fmt.Errorf("error de ping: %v", err)
 	}
 
-	//verificar existencia de la carpeta
-
-	fullPath := filepath.Join(".", migrationPath)
-	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		return fmt.Errorf("❌ Directorio no encontrado: %s", fullPath)
+	// Resolver ruta absoluta igual que main.go hace con uploads
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("error obteniendo directorio de trabajo: %v", err)
 	}
 
-	//leer archivos sql
+	fullPath := filepath.Join(wd, moduleInfo.MigrationPath)
+
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		return fmt.Errorf("directorio no encontrado: %s", fullPath)
+	}
+
 	files, err := filepath.Glob(filepath.Join(fullPath, "*.sql"))
 	if err != nil {
 		return fmt.Errorf("error leyendo archivos: %v", err)
@@ -257,51 +305,66 @@ func ExecuteModuleMigrations(dbName string, moduleCode string) error {
 		return nil
 	}
 
-	//ordenas y ejecutar
 	sort.Strings(files)
-	fmt.Printf("📄 Archivos encontrados: %d\n", len(files))
+	fmt.Printf("📄 %d archivos en %s\n", len(files), moduleInfo.MigrationPath)
 
 	for _, file := range files {
 		fileName := filepath.Base(file)
-		fmt.Printf("  ▶️  %s\n", fileName)
-
 		sqlContent, err := os.ReadFile(file)
 		if err != nil {
 			return fmt.Errorf("error leyendo %s: %v", fileName, err)
 		}
 
-		statements := strings.Split(string(sqlContent), ";")
+		statements := splitSQLStatements(string(sqlContent))
 		for _, stmt := range statements {
 			stmt = strings.TrimSpace(stmt)
 			if stmt == "" {
 				continue
 			}
-
-			_, err = db.Exec(stmt)
-			if err != nil {
-				return fmt.Errorf("❌ Error en %s: %v", fileName, err)
+			if _, err = db.Exec(stmt); err != nil {
+				return fmt.Errorf("error en %s: %v", fileName, err)
 			}
 		}
-
-		fmt.Printf("Completado\n")
+		fmt.Printf("  ✅ %s\n", fileName)
 	}
 
-	fmt.Printf("Migraciones de '%s' ejecutadas\n", moduleInfo.Name)
+	fmt.Printf("✅ Migraciones de '%s' completadas\n", moduleInfo.Name)
 	return nil
 
 }
 
 func InstallModule(dbName string, licenceID int64, code string) error {
 
+	moduleInfo, err := GetModuleInfoByCode(code)
+	if err != nil {
+		return err
+	}
+
+	//validar si esta instalado
+	already, err := IsModuleInstalledInLicence(licenceID, moduleInfo.ID)
+	if err != nil {
+		return fmt.Errorf("error verificando módulo en licencia: %v", err)
+	}
+	if already {
+		fmt.Printf("⚠️  Módulo '%s' ya instalado, omitiendo...\n", code)
+		return nil
+	}
+
+	// Registrar en licencia
 	if err := AddModule(licenceID, code); err != nil {
 		return fmt.Errorf("error agregando a licencia: %v", err)
 	}
 
-	//ejecutar migraciones BDTENANT
-	if err := ExecuteModuleMigrations(dbName, code); err != nil {
-		return err
+	// Ejecutar migraciones solo si tiene ruta configurada
+	if moduleInfo.MigrationPath != "" {
+		if err := ExecuteModuleMigrations(dbName, moduleInfo); err != nil {
+			return fmt.Errorf("error en migraciones de '%s': %v", code, err)
+		}
+	} else {
+		fmt.Printf("ℹ️  Módulo '%s' sin migraciones configuradas\n", code)
 	}
 
+	fmt.Printf("✅ Módulo '%s' instalado\n", code)
 	return nil
 
 }
@@ -313,15 +376,22 @@ func InstallModulesByCode(dbName string, licenceID int64, modules []string) erro
 		return nil
 	}
 
-	for i, moduleCode := range modules {
-		fmt.Printf("\n" + strings.Repeat("=", 60))
-		fmt.Printf("\n[%d/%d] ", i+1, len(modules))
+	orderedModules, err := ResolveInstallOrder(modules)
+	if err != nil {
+		return fmt.Errorf("error resolviendo dependencias: %v", err)
+	}
+
+	fmt.Printf("\n📦 Plan de instalación: %v\n", orderedModules)
+
+	for i, moduleCode := range orderedModules {
+		fmt.Printf("\n%s\n[%d/%d] Instalando: %s\n",
+			strings.Repeat("=", 60), i+1, len(orderedModules), moduleCode)
 
 		if err := InstallModule(dbName, licenceID, moduleCode); err != nil {
-			return fmt.Errorf("❌ Error instalando '%s': %v", moduleCode, err)
+			return fmt.Errorf("error instalando '%s': %v", moduleCode, err)
 		}
 
-		fmt.Printf(strings.Repeat("=", 60) + "\n")
+		fmt.Printf("%s\n", strings.Repeat("=", 60))
 	}
 
 	return nil

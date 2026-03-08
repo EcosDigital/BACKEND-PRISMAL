@@ -2,6 +2,7 @@ package modular
 
 import (
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -140,7 +141,14 @@ func RegisterModule(db *gorm.DB, req *ModuleRequest) (int64, error) {
 		return 0, err
 	}
 
-	return regID, err
+	//guardar dependencias
+	if len(req.Dependencias) > 0 {
+		if err := AddDependencias(db, regID, req.Dependencias, req.UserID); err != nil {
+			return 0, fmt.Errorf("error guardando dependencias: %v", err)
+		}
+	}
+
+	return regID, nil
 
 }
 
@@ -178,6 +186,10 @@ func EditModule(db *gorm.DB, req *ModuleUpdateRequest, id int64) (int64, error) 
 	regID, err := UpdateModule(db, req, id)
 	if err != nil {
 		return 0, err
+	}
+
+	if err := SyncDependencias(db, id, req.Dependencias, req.UserID); err != nil {
+		return 0, fmt.Errorf("error sincronizando dependencias: %v", err)
 	}
 
 	return regID, err

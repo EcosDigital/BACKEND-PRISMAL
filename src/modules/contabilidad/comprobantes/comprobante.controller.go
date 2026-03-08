@@ -6,6 +6,7 @@ import (
 
 	"github.com/ecosistema/core/src/shared/logging"
 	"github.com/ecosistema/core/src/shared/middlewares"
+	"github.com/ecosistema/core/src/shared/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -24,8 +25,16 @@ func CreateComprobanteController(c *fiber.Ctx) error {
 	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
 	req.SedeID = int64(middlewares.GetSedeID(c))
 
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
 	//invocar services
-	newID, err := RegisterComprobante(&req)
+	newID, err := RegisterComprobante(db, &req)
 	if err != nil {
 
 		logging.Error.Printf("Hubo un error: %v", err)
@@ -43,7 +52,16 @@ func CreateComprobanteController(c *fiber.Ctx) error {
 }
 
 func FindLastComprobantesController(c *fiber.Ctx) error {
-	results, err := FilterLastComprobantes()
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	results, err := FilterLastComprobantes(db)
 	if err != nil {
 		logging.Error.Printf("Hubo un error: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -52,13 +70,22 @@ func FindLastComprobantesController(c *fiber.Ctx) error {
 }
 
 func FindComprobanteByIDController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
 	idParam := c.Params("id")
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID invalido"})
 	}
 
-	results, err := FilterComprobanteByID(id)
+	results, err := FilterComprobanteByID(db, id)
 	if err != nil {
 		logging.Error.Printf("Hubo un error: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -86,8 +113,16 @@ func ChangeComprobanteController(c *fiber.Ctx) error {
 	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
 	req.SedeID = int64(middlewares.GetSedeID(c))
 
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
 	//invocar service (logica de negocio)
-	uptID, err := EditComprobante(id, &req)
+	uptID, err := EditComprobante(db, id, &req)
 	if err != nil {
 
 		logging.Error.Printf("Hubo un error: %v", err)

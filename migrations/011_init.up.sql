@@ -51,4 +51,5 @@ INSERT INTO configuracion.cfg_modulos
 VALUES
     (1, 3, 3, 'MD-004', 'Inventario', 'Stock y movimientos', 3, false, 'bg-green-500', 'bg-green-50', 'bg-green-50', 'Package', true, 1, 1);
 
+
 COMMIT;

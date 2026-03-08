@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/ecosistema/core/src/database"
+	"gorm.io/gorm"
 )
 
-func CreateComprobante(req *ComprobanteRequest) (int64, error) {
+func CreateComprobante(db *gorm.DB, req *ComprobanteRequest) (int64, error) {
 
 	data := map[string]interface{}{
 		"id_modulo":           req.IDModulo,
@@ -30,7 +30,7 @@ func CreateComprobante(req *ComprobanteRequest) (int64, error) {
 		"id_sede":             req.SedeID,
 	}
 
-	err := database.GormDB.
+	err := db.
 		Table("comprobantes.cfg_comprobante").
 		Create(&data)
 
@@ -47,11 +47,11 @@ func CreateComprobante(req *ComprobanteRequest) (int64, error) {
 
 }
 
-func ListComprobantesLast() ([]ComprobanteResponse, error) {
+func ListComprobantesLast(db *gorm.DB) ([]ComprobanteResponse, error) {
 
 	var results []ComprobanteResponse
 
-	err := database.GormDB.
+	err := db.
 		Table("comprobantes.cfg_comprobante c").
 		Select(`
 			c.id as id,
@@ -86,10 +86,10 @@ func ListComprobantesLast() ([]ComprobanteResponse, error) {
 
 }
 
-func ListComprobanteById(id int64) ([]ComprobanteResponse, error) {
+func ListComprobanteById(db *gorm.DB, id int64) ([]ComprobanteResponse, error) {
 	var results []ComprobanteResponse
 
-	err := database.GormDB.
+	err := db.
 		Table("comprobantes.cfg_comprobante c").
 		Select(`
 			c.id as id,
@@ -124,7 +124,7 @@ func ListComprobanteById(id int64) ([]ComprobanteResponse, error) {
 	return results, nil
 }
 
-func UpdateComprobante(req *ComprobanteUpdateRequest, id int64) (int64, error) {
+func UpdateComprobante(db *gorm.DB, req *ComprobanteUpdateRequest, id int64) (int64, error) {
 
 	data := map[string]interface{}{
 		"nombre_comprobante":  req.Nombre,
@@ -145,7 +145,7 @@ func UpdateComprobante(req *ComprobanteUpdateRequest, id int64) (int64, error) {
 		"id_sede":             req.SedeID,
 	}
 
-	err := database.GormDB.
+	err := db.
 		Table("comprobantes.cfg_comprobante").
 		Where("id = ?", id).
 		Updates(data)

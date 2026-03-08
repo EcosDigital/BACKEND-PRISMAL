@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/ecosistema/core/src/database"
 	"gorm.io/gorm"
 )
 
@@ -73,13 +74,18 @@ func CreateEmpresa(db *gorm.DB, req *EmpresaRequest) (int64, error) {
 		return 0, err.Error
 	}
 
-	id, ok := data["id"].(int64)
-	if !ok {
-		return 0, nil // el insert fue exitoso, pero no se requiere el ID
-	}
+	var id int64
+	db.Raw("SELECT lastval()").Scan(&id)
 
 	return id, nil
 
+}
+
+func CreateEmpresaRol(empresaID int64) error {
+	return database.GormDB.Exec(
+		"INSERT INTO seguridad.cfg_empresas_roles (id_empresa, id_rol, created_by, created_at) VALUES (?, 1, 1, NOW())",
+		empresaID,
+	).Error
 }
 
 func ListEmpresaLast(db *gorm.DB) ([]EmpresaResponse, error) {

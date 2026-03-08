@@ -29,9 +29,10 @@ type TenantRequest struct {
 }
 
 type ModuleInfo struct {
-	ID   int
-	Code string
-	Name string
+	ID            int
+	Code          string
+	Name          string
+	MigrationPath string
 }
 
 type ModuleCatalogItem struct {

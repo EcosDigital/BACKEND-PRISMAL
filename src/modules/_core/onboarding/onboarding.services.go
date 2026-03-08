@@ -138,6 +138,11 @@ func RegisterTenantOnboarding(db *gorm.DB, req *TenantRequest) (int64, error) {
 		return 0, fmt.Errorf("error creando empresa tenant: %v", err)
 	}
 
+	// 7.1 ASIGNAR ROL A LA EMPRESA EN BD DEL TENANT
+	if err := empresa.CreateEmpresaRol(empresaID); err != nil {
+		return 0, fmt.Errorf("error asignando rol a empresa tenant: %v", err)
+	}
+
 	// 8 CREAR TERCERO ADMIN EN BD DEL TENANT
 
 	ClaseTerceroTenant := []int{12}
