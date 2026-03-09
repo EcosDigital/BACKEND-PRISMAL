@@ -74,7 +74,7 @@ func RegisterTenantOnboarding(db *gorm.DB, req *TenantRequest) (int64, error) {
 	}
 
 	// 6 AGREGAR MODULOS BASE A LA LICENCIA
-	if err := AddBaseModulesToLicence(licenceID); err != nil {
+	if err := AddBaseModulesToLicence(licenceID, dbName); err != nil {
 		return 0, fmt.Errorf("error agregando módulos base a licencia: %v", err)
 	}
 

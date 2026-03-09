@@ -54,24 +54,16 @@ func ListComprobantesLast(db *gorm.DB) ([]ComprobanteResponse, error) {
 	err := db.
 		Table("comprobantes.cfg_comprobante c").
 		Select(`
-			c.id as id,
-			c.id_modulo,
+			c.id,
+			C.id_modulo,
 			m.nombre as modulo,
-			c.id_tipo_operacion,
 			o.nombre as operacion,
-			c.nombre_comprobante,
-			c.prefijo_comprobante,
-			c.consecutivo_inicial,
-			c.consecutivo_actual,
-			c.permite_anulacion,
-			c.fecha_inicio,
-			c.fecha_final,
-			c.token,
-			c.resolucion,
-			c.is_active`).
-		Joins("INNER JOIN configuracion.cfg_modulos m ON m.id = c.id_modulo").
+			c.nombre_comprobante || ' (' || c.prefijo_comprobante || ')' as nombre,
+			c.consecutivo_actual as consecutivo,
+			c.is_active `).
 		Joins("INNER JOIN comprobantes.ref_tipo_operacion o ON o.id = c.id_tipo_operacion").
-		Order("c.id DESC").Limit(20).
+		Joins("INNER JOIN configuracion.ref_modulos_tenant m ON m.id_ref = c.id_modulo").
+		Order("c.id ASC").Limit(20).
 		Scan(&results).Error
 
 	if err != nil {

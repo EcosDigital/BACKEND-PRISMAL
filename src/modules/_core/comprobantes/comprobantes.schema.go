@@ -21,21 +21,13 @@ type ComprobanteRequest struct {
 }
 
 type ComprobanteResponse struct {
-	ID                int        `json:"id"`
-	IDModulo          int        `json:"id_modulo"`
-	Modulo            string     `json:"modulo"`
-	IDTipoOperacion   int        `json:"id_tipo_operacion"`
-	Operacion         string     `json:"operacion"`
-	Nombre            string     `json:"nombre"`
-	Prefijo           string     `json:"prefijo"`
-	ConsecutivoInicio int        `json:"consecutivo_inicio"`
-	ConsecutivoFinal  *int       `json:"consecutivo_final"`
-	PermiteAnular     *bool      `json:"permite_anular"`
-	FechaInicio       time.Time  `json:"fecha_inicio"`
-	FechaFinal        *time.Time `json:"fecha_final"`
-	Token             string     `json:"token"`
-	Resolucion        string     `json:"resolucion"`
-	IsActive          *bool      `json:"is_active"`
+	ID          int    `json:"id"`
+	IDModulo    int    `json:"id_modulo"`
+	Modulo      string `json:"modulo"`
+	Operacion   string `json:"operacion"`
+	Nombre      string `json:"nombre"`
+	Consecutivo int    `json:"consecutivo"`
+	IsActive    *bool  `json:"is_active"`
 }
 
 type ComprobanteUpdateRequest struct {

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/ecosistema/core/src/modules/_core/comprobantes"
 	empresa "github.com/ecosistema/core/src/modules/_core/gestion_empresa"
 	modular "github.com/ecosistema/core/src/modules/_core/gestion_modular"
 	onboarding "github.com/ecosistema/core/src/modules/_core/onboarding"
@@ -28,11 +29,13 @@ func RegisterCoreRoutes(r fiber.Router) {
 	search.SearchDynamicsCore(core)
 	referenciales.SetupRoutes(core) // referenciales
 	modular.Rutas_Modular(core)     //gestion modular
-	empresa.Rutas_empresa(core)
-	empresa.Rutas_Sede(core)
+	empresa.Rutas_empresa(core)     // gestion empresa
+	empresa.Rutas_Sede(core)        // gestion sedes
 
-	terceros.Rutas_Terceros(core)
-	roles.Rutas_Roles(core)
+	terceros.Rutas_Terceros(core) //gestion terceros
+	roles.Rutas_Roles(core)       // gestion roles
 	usuarios.Rutas_Usuarios(core) //usuarios
+
+	comprobantes.Rutas_comprobante(core) //gestion comprobantes
 
 }

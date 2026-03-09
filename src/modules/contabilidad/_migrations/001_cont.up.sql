@@ -7,43 +7,19 @@ CREATE TABLE IF NOT EXISTS comprobantes.ref_tipo_operacion(
     CONSTRAINT uq_ref_tipo_operacion UNIQUE (id_modulo, nombre)
 );
 
-INSERT INTO comprobantes.ref_tipo_operacion (id_modulo, nombre)
-SELECT id, 'Saldo Inicial'
-FROM configuracion.cfg_modulos
-WHERE codigo = 'MD-004'
-ON CONFLICT (id_modulo, nombre) DO NOTHING;
-
-INSERT INTO comprobantes.ref_tipo_operacion (id_modulo, nombre)
-SELECT id, 'Entrada'
-FROM configuracion.cfg_modulos
-WHERE codigo = 'MD-004'
-ON CONFLICT (id_modulo, nombre) DO NOTHING;
-
-
-INSERT INTO comprobantes.ref_tipo_operacion (id_modulo, nombre)
-SELECT id, 'Baja'
-FROM configuracion.cfg_modulos
-WHERE codigo = 'MD-004'
-ON CONFLICT (id_modulo, nombre) DO NOTHING;
-
-
-INSERT INTO comprobantes.ref_tipo_operacion (id_modulo, nombre)
-SELECT id, 'Traslado'
-FROM configuracion.cfg_modulos
-WHERE codigo = 'MD-004'
-ON CONFLICT (id_modulo, nombre) DO NOTHING;
-
-
-INSERT INTO comprobantes.ref_tipo_operacion (id_modulo, nombre)
-SELECT id, 'Despacho'
-FROM configuracion.cfg_modulos
-WHERE codigo = 'MD-004'
+--MODULO DE INVENTARIOS DEBE SER EL ID(4)
+INSERT INTO comprobantes.ref_tipo_operacion (id_modulo, nombre) VALUES
+    (4, 'Saldo Inicial'),
+    (4, 'Entrada'),
+    (4, 'Baja'),
+    (4, 'Traslado'),
+    (4, 'Despacho')
 ON CONFLICT (id_modulo, nombre) DO NOTHING;
 
 
 CREATE TABLE IF NOT EXISTS comprobantes.cfg_comprobante(
     id SERIAL PRIMARY KEY NOT NULL,
-    id_modulo INT NOT NULL REFERENCES configuracion.cfg_modulos(id),
+    id_modulo INT NOT NULL,
     id_tipo_operacion INT NOT NULL REFERENCES comprobantes.ref_tipo_operacion(id),
     nombre_comprobante VARCHAR(250) NOT NULL,
     prefijo_comprobante VARCHAR(10) NOT NULL,
@@ -62,6 +38,8 @@ CREATE TABLE IF NOT EXISTS comprobantes.cfg_comprobante(
     updated_at TIMESTAMP,
     id_empresa INT NOT NULL,
     id_sede INT NULL,
+    CONSTRAINT uix_cfg_comprobante_prefijo_modulo
+        UNIQUE (prefijo_comprobante, id_modulo),
     CHECK (fecha_final IS NULL OR fecha_final >= fecha_inicio)
 );
 

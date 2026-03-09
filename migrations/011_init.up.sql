@@ -52,4 +52,7 @@ VALUES
     (1, 3, 3, 'MD-004', 'Inventario', 'Stock y movimientos', 3, false, 'bg-green-500', 'bg-green-50', 'bg-green-50', 'Package', true, 1, 1);
 
 
+INSERT INTO seguridad.cfg_empresas_roles (id_empresa, id_rol, created_by, created_at)
+	VALUES (1, 1, 1, NOW());
+
 COMMIT;

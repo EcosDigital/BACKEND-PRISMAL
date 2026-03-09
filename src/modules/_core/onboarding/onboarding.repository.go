@@ -364,6 +364,16 @@ func InstallModule(dbName string, licenceID int64, code string) error {
 		fmt.Printf("ℹ️  Módulo '%s' sin migraciones configuradas\n", code)
 	}
 
+	//registra referencia en local tenant
+	tenantDB, err := ConnectToTenantDB(dbName)
+	if err != nil {
+		return fmt.Errorf("error conectando a tenant para registrar ref_modulo: %v", err)
+	}
+
+	if err := RegisterModuloRefTenant(tenantDB, moduleInfo); err != nil {
+		return fmt.Errorf("error registrando ref_modulo en tenant: %v", err)
+	}
+
 	fmt.Printf("✅ Módulo '%s' instalado\n", code)
 	return nil
 
@@ -395,6 +405,16 @@ func InstallModulesByCode(dbName string, licenceID int64, modules []string) erro
 	}
 
 	return nil
+
+}
+
+func RegisterModuloRefTenant(tenantDB *gorm.DB, moduleInfo *ModuleInfo) error {
+
+	return tenantDB.Exec(`
+        INSERT INTO configuracion.ref_modulos_tenant (id_ref, codigo, nombre)
+        VALUES (?, ?, ?)
+        ON CONFLICT (id_ref) DO NOTHING
+    `, moduleInfo.ID, moduleInfo.Code, moduleInfo.Name).Error
 
 }
 
@@ -459,9 +479,30 @@ func ListModulosActiveProduccion(db *gorm.DB) ([]ModuleCatalogCategory, error) {
 
 }
 
-func AddBaseModulesToLicence(licenceID int64) error {
+func AddBaseModulesToLicence(licenceID int64, dbName string) error {
 	baseCodes := []string{"MD-001", "MD-002"}
-	return AddModulesLicence(licenceID, baseCodes)
+
+	tenantDB, err := ConnectToTenantDB(dbName)
+	if err != nil {
+		return fmt.Errorf("error conectando a tenant: %v", err)
+	}
+
+	for _, code := range baseCodes {
+		if err := AddModule(licenceID, code); err != nil {
+			return err
+		}
+
+		moduleInfo, err := GetModuleInfoByCode(code)
+		if err != nil {
+			return err
+		}
+
+		if err := RegisterModuloRefTenant(tenantDB, moduleInfo); err != nil {
+			return fmt.Errorf("error registrando ref base '%s': %v", code, err)
+		}
+	}
+
+	return nil
 }
 
 func CheckDomainAvailable(dominio string) (bool, error) {
