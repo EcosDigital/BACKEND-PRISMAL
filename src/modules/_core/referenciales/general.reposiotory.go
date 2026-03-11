@@ -488,7 +488,7 @@ func ListModuleComprobantes(db *gorm.DB) ([]ModuleComprobantes, error) {
 func ListPrioridadTicket(db *gorm.DB) ([]PrioridadTicket, error) {
 	var results []PrioridadTicket
 
-	err := database.GormDB.
+	err := db.
 		Table("gestiones.cfg_niveles_caso").
 		Order("id ASC").Scan(&results).Error
 
