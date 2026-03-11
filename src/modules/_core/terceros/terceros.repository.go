@@ -3,10 +3,10 @@ package terceros
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
-	"github.com/ecosistema/core/src/database"
 	"gorm.io/gorm"
 )
 
@@ -74,7 +74,10 @@ func CreateTercero(db *gorm.DB, req *TerceroRequest) (int64, error) {
 	}
 
 	var id_reg int64
-	database.GormDB.Raw("SELECT lastval()").Scan(&id_reg)
+	err = db.Raw("SELECT lastval()").Scan(&id_reg).Error
+	if err != nil || id_reg == 0 {
+		return 0, fmt.Errorf("no se pudo obtener el ID del tercero creado")
+	}
 
 	return id_reg, nil
 
