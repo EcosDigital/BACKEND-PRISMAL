@@ -83,3 +83,13 @@ func GetTipoSede(db *gorm.DB) ([]TipoSede, error) {
 func GetTipoRol(db *gorm.DB) ([]TipoRol, error) {
 	return ListTipoRoles(db)
 }
+
+// === comprobantes ==== ///
+func GetModulosComprobantes(db *gorm.DB) ([]ModuleComprobantes, error) {
+	return ListModuleComprobantes(db)
+}
+
+// === GESTIONES === //
+func GetNivelesCaso(db *gorm.DB) ([]PrioridadTicket, error) {
+	return ListPrioridadTicket(db)
+}

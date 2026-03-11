@@ -464,3 +464,41 @@ func ListEstadoModule() ([]EstadoModulo, error) {
 	return results, nil
 
 }
+
+// ===== COMPROBANTES ======= //
+func ListModuleComprobantes(db *gorm.DB) ([]ModuleComprobantes, error) {
+	var results []ModuleComprobantes
+
+	err := database.GormDB.
+		Table("configuracion.ref_modulos_tenant").
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []ModuleComprobantes{}
+	}
+
+	return results, nil
+}
+
+// ===== GESTIONES ======== //
+func ListPrioridadTicket(db *gorm.DB) ([]PrioridadTicket, error) {
+	var results []PrioridadTicket
+
+	err := database.GormDB.
+		Table("gestiones.cfg_niveles_caso").
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []PrioridadTicket{}
+	}
+
+	return results, nil
+}

@@ -393,3 +393,43 @@ func GetTipoRolesController(c *fiber.Ctx) error {
 	}
 	return c.JSON(result)
 }
+
+func GetModulesComprobanteController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	result, err := GetModulosComprobantes(db)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}
+
+func GetNivelesTicketController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	result, err := GetNivelesCaso(db)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}

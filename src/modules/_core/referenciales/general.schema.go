@@ -120,3 +120,19 @@ type TipoRol struct {
 	ID     int    `json:"id"`
 	Nombre string `json:"nombre"`
 }
+
+type ModuleComprobantes struct {
+	ID     int    `json:"id"`
+	Codigo string `json:"codigo"`
+	IDRef  int    `json:"id_ref"`
+	Nombre string `json:"nombre"`
+}
+
+type PrioridadTicket struct {
+	ID          int    `json:"id"`
+	Codigo      string `json:"codigo"`
+	Descripcion string `json:"descripcion"`
+	ColorHex    string `json:"color_hex"`
+	Orden       string `json:"orden"`
+	Nombre      string `json:"nombre"`
+}

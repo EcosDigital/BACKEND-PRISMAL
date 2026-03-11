@@ -12,6 +12,7 @@ import (
 	"github.com/ecosistema/core/src/modules/_core/terceros"
 	uploads "github.com/ecosistema/core/src/modules/_core/up"
 	"github.com/ecosistema/core/src/modules/_core/usuarios"
+	"github.com/ecosistema/core/src/modules/gestiones"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -35,6 +36,8 @@ func RegisterCoreRoutes(r fiber.Router) {
 	terceros.Rutas_Terceros(core) //gestion terceros
 	roles.Rutas_Roles(core)       // gestion roles
 	usuarios.Rutas_Usuarios(core) //usuarios
+
+	gestiones.Rutas_Gestiones(core)
 
 	comprobantes.Rutas_comprobante(core) //gestion comprobantes
 
