@@ -723,7 +723,7 @@ func ListFuncionLast(db *gorm.DB) ([]FuncionResponse, error) {
 			f.is_active`).
 		Joins("INNER JOIN configuracion.cfg_productos_software p ON f.id_producto = p.id").
 		Joins("INNER JOIN configuracion.cfg_modulos m ON m.id = f.id_modulo").
-		Order("f.id ASC").Limit(10).Scan(&results).Error
+		Order("f.id ASC").Limit(30).Scan(&results).Error
 
 	if err != nil {
 		return nil, err
