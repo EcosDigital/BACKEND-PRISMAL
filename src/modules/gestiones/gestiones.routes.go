@@ -17,4 +17,9 @@ func Rutas_Gestiones(r fiber.Router) {
 	protected.Get("/tickets", FindTicketsController)
 	protected.Get("/ticket/:id", FindTicketByIDController)
 
+	protected.Post("/ticket/:id/gestion",
+		middlewares.VallidateBody(&GestionRequest{}), CreateGestionController)
+
+	protected.Get("/ticket/:id/gestiones", FindGestionesController)
+
 }

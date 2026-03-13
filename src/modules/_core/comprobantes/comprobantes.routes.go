@@ -11,6 +11,7 @@ func Rutas_comprobante(r fiber.Router) {
 		middlewares.JWTProtected,
 		middlewares.EnrichContext)
 
+	//crear comprobante
 	protected.Post("/",
 		middlewares.VallidateBody(&ComprobanteRequest{}), CreateComprobanteController)
 

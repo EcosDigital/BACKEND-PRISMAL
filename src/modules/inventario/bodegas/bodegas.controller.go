@@ -1,4 +1,4 @@
-package comprobantes
+package bodega
 
 import (
 	"net/http"
@@ -10,14 +10,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func CreateComprobanteController(c *fiber.Ctx) error {
+func CreateBodegaController(c *fiber.Ctx) error {
 
-	var req ComprobanteRequest
+	var req BodegaRequest
 
-	//parsear JSON de la request
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"Error": "Json invalido",
+			"error": "JSON inválido",
 		})
 	}
 
@@ -25,116 +24,97 @@ func CreateComprobanteController(c *fiber.Ctx) error {
 	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
 	req.SedeID = int64(middlewares.GetSedeID(c))
 
-	//obtiene base de datos
 	db, err := utils.GetDB(c)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	//invocar services
-	newID, err := RegisterComprobante(db, &req)
+	newID, err := RegisterBodega(db, &req)
 	if err != nil {
-
 		logging.Error.Printf("Hubo un error: %v", err)
-
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	//response
 	return c.Status(http.StatusCreated).JSON(fiber.Map{
-		"message": "Registro exitoso...",
+		"message": "Bodega registrada exitosamente",
 		"id":      newID,
 	})
 }
 
-func FindLastComprobantesController(c *fiber.Ctx) error {
+func FindBodegasController(c *fiber.Ctx) error {
 
-	//obtiene base de datos
 	db, err := utils.GetDB(c)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	results, err := FilterLastComprobantes(db)
+	empresaID := int64(middlewares.GetEmpresaID(c))
+
+	results, err := FilterBodegas(db, empresaID)
 	if err != nil {
 		logging.Error.Printf("Hubo un error: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
+
 	return c.JSON(results)
 }
 
-func FindComprobanteByIDController(c *fiber.Ctx) error {
+func FindBodegaByIDController(c *fiber.Ctx) error {
 
-	//obtiene base de datos
 	db, err := utils.GetDB(c)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	idParam := c.Params("id")
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID invalido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
 	}
 
-	results, err := FilterComprobanteByID(db, id)
+	result, err := FilterBodegaByID(db, id)
 	if err != nil {
 		logging.Error.Printf("Hubo un error: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.JSON(results)
+	if result == nil || result.ID == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Bodega no encontrada"})
+	}
+
+	return c.JSON(result)
 }
 
-func ChangeComprobanteController(c *fiber.Ctx) error {
+func ChangeBodegaController(c *fiber.Ctx) error {
+
 	idParam := c.Params("id")
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID invalido"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
 	}
 
-	var req ComprobanteUpdateRequest
+	var req BodegaUpdateRequest
 
-	//parsear JSON de la request
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"Error": "Json invalido",
-		})
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
 	}
 
 	req.UserID = int64(middlewares.GetUserID(c))
 	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
 	req.SedeID = int64(middlewares.GetSedeID(c))
 
-	//obtiene base de datos
 	db, err := utils.GetDB(c)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	//invocar service (logica de negocio)
-	uptID, err := UpdateComprobante(db, &req, id)
+	uptID, err := EditBodega(db, id, &req)
 	if err != nil {
-
 		logging.Error.Printf("Hubo un error: %v", err)
-
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	//response
-	return c.Status(http.StatusCreated).JSON(fiber.Map{
-		"message": "Registro actualizado...",
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Bodega actualizada exitosamente",
 		"id":      uptID,
 	})
 }

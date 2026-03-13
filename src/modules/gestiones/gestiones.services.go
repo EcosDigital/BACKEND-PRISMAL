@@ -35,3 +35,38 @@ func FilterTicketByID(db *gorm.DB, id int64) ([]TicketResponse, error) {
 
 	return results, nil
 }
+
+// ─── Gestiones ────────────────────────────────────────────────────────────────
+func RegisterGestion(db *gorm.DB, ticketID int64, req *GestionRequest) (int64, error) {
+
+	// Verificar que el ticket exista
+	var count int64
+	if err := db.
+		Table("gestiones.cfg_tickets_soporte").
+		Where("id = ?", ticketID).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	if count == 0 {
+		return 0, errors.New("el ticket no existe")
+	}
+
+	return CreateGestion(db, ticketID, req)
+}
+
+func FilterGestiones(db *gorm.DB, ticketID int64) ([]GestionResponse, error) {
+
+	// Verificar que el ticket exista
+	var count int64
+	if err := db.
+		Table("gestiones.cfg_tickets_soporte").
+		Where("id = ?", ticketID).
+		Count(&count).Error; err != nil {
+		return nil, err
+	}
+	if count == 0 {
+		return nil, errors.New("el ticket no existe")
+	}
+
+	return ListGestiones(db, ticketID)
+}

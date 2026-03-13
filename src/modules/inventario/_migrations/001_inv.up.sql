@@ -16,10 +16,12 @@ INSERT INTO inventario.cfg_grupo_articulos (codigo, nombre, descripcion) VALUES 
 
 CREATE TABLE IF NOT EXISTS inventario.ref_unidad_medidas(
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(150) NOT NULL
+    nombre VARCHAR(150) NOT NULL UNIQUE
 );
 
-INSERT INTO inventario.ref_unidad_medidas (nombre) VALUES ('Unidad');
+INSERT INTO inventario.ref_unidad_medidas (nombre) 
+VALUES ('Unidad'), ('Kilogramo'), ('Libra'), ('Gramo'), ('Onza')
+ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS inventario.ref_forma_farmaceutica(
     id SERIAL PRIMARY KEY,
@@ -29,8 +31,26 @@ CREATE TABLE IF NOT EXISTS inventario.ref_forma_farmaceutica(
 
 CREATE TABLE IF NOT EXISTS inventario.ref_presentacion_articulo(
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(250) NOT NULL
+    nombre VARCHAR(250) NOT NULL UNIQUE
 );
+
+INSERT INTO inventario.ref_presentacion_articulo (nombre) VALUES
+  ('Unidad'),
+  ('Caja'),
+  ('Paquete'),
+  ('Bolsa'),
+  ('Frasco'),
+  ('Ampolla'),
+  ('Rollo'),
+  ('Litro'),
+  ('Kilo'),
+  ('A granel'),
+  ('Empacado al vacío'),
+  ('Porción'),
+  ('Par'),
+  ('Juego'),
+  ('Kit')
+ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS inventario.cfg_articulos(
     id SERIAL PRIMARY KEY,
@@ -41,7 +61,7 @@ CREATE TABLE IF NOT EXISTS inventario.cfg_articulos(
     id_unidad_medida INT NOT NULL REFERENCES inventario.ref_unidad_medidas(id),
     factor_unidad_base NUMERIC(14,4) DEFAULT 1,
     id_forma_farmaceutica INT NULL REFERENCES inventario.ref_forma_farmaceutica(id),
-    id_presentacion INT NOT NULL REFERENCES inventario.ref_presentacion_articulo(id),
+    id_presentacion INT NULL REFERENCES inventario.ref_presentacion_articulo(id),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT NOW(),
     created_by INT NOT NULL,
@@ -161,7 +181,7 @@ CREATE TABLE IF NOT EXISTS inventario.mov_movimientos_detalle (
     id SERIAL PRIMARY KEY,
     id_movimiento INT NOT NULL REFERENCES inventario.mov_movimientos(id),
     id_articulo INT NOT NULL REFERENCES inventario.cfg_articulos(id),
-    id_proveedor INT NOT NULL REFERENCES configuracion.cfg_terceros(id),
+    id_proveedor INT NULL REFERENCES configuracion.cfg_terceros(id),
     marca VARCHAR(150) NULL,
     lote VARCHAR(100) NULL,
     cantidad NUMERIC(14,4) NOT NULL CHECK (cantidad > 0),

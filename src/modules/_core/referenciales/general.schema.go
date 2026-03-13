@@ -121,12 +121,20 @@ type TipoRol struct {
 	Nombre string `json:"nombre"`
 }
 
+// === COMPROBANTES ==//
 type ModuleComprobantes struct {
 	ID     int    `json:"id"`
 	Codigo string `json:"codigo"`
 	IDRef  int    `json:"id_ref"`
 	Nombre string `json:"nombre"`
 }
+
+type TipoOperacion struct {
+	ID     int    `json:"id"`
+	Nombre string `json:"nombre"`
+}
+
+// ==== GESTIONES == //
 
 type PrioridadTicket struct {
 	ID          int    `json:"id"`
@@ -135,4 +143,38 @@ type PrioridadTicket struct {
 	ColorHex    string `json:"color_hex"`
 	Orden       string `json:"orden"`
 	Nombre      string `json:"nombre"`
+}
+
+type EstadoTicket struct {
+	ID       int    `json:"id"`
+	Nombre   string `json:"nombre"`
+	ColorHex string `json:"color_hex"`
+	Orden    string `json:"orden"`
+}
+
+type Colaboradores struct {
+	ID     int    `json:"id"`
+	Nombre string `json:"nombre"`
+}
+
+// == INVENTARIO === ///
+
+type TipoBodega struct {
+	ID     int    `json:"id"`
+	Nombre string `json:"nombre"`
+}
+
+type UnidadeMedida struct {
+	ID     int    `json:"id"`
+	Nombre string `json:"nombre"`
+}
+
+type GrupoArticulos struct {
+	ID     int    `json:"id"`
+	Nombre string `json:"nombre"`
+}
+
+type Presentacionrticulos struct {
+	ID     int    `json:"id"`
+	Nombre string `json:"nombre"`
 }

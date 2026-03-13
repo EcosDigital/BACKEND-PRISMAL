@@ -13,9 +13,8 @@ func CreateComprobante(db *gorm.DB, req *ComprobanteRequest) (int64, error) {
 		"id_modulo":           req.IDModulo,
 		"id_tipo_operacion":   req.IDTipoOperacion,
 		"nombre_comprobante":  req.Nombre,
-		"pregijo_comprobante": req.Prefijo,
+		"prefijo_comprobante": req.Prefijo,
 		"consecutivo_inicial": req.ConsecutivoFinal,
-		"consecutivo_final":   req.ConsecutivoFinal,
 		"consecutivo_actual":  0,
 		"consecutivo_fin":     req.ConsecutivoFinal,
 		"permite_anulacion":   req.PermiteAnular,
@@ -78,28 +77,27 @@ func ListComprobantesLast(db *gorm.DB) ([]ComprobanteResponse, error) {
 
 }
 
-func ListComprobanteById(db *gorm.DB, id int64) ([]ComprobanteResponse, error) {
-	var results []ComprobanteResponse
+func ListComprobanteById(db *gorm.DB, id int64) ([]ComprobanteResponseFull, error) {
+	var results []ComprobanteResponseFull
 
 	err := db.
 		Table("comprobantes.cfg_comprobante c").
 		Select(`
 			c.id as id,
 			c.id_modulo,
-			m.nombre as modulo,
 			c.id_tipo_operacion,
-			o.nombre as operacion,
-			c.nombre_comprobante,
-			c.prefijo_comprobante,
-			c.consecutivo_inicial,
+			c.prefijo_comprobante as prefijo,
+			c.nombre_comprobante as nombre,
+			c.consecutivo_inicial as consecutivo_inicio,
 			c.consecutivo_actual,
-			c.permite_anulacion,
-			c.fecha_inicio,
-			c.fecha_final,
+			c.consecutivo_fin as consecutivo_final,
+			c.permite_anulacion as permite_anulacion,
+			c.fecha_inicio::text as fecha_inicio,
+			c.fecha_final::text  as fecha_final,
 			c.token,
 			c.resolucion,
 			c.is_active`).
-		Joins("INNER JOIN configuracion.cfg_modulos m ON m.id = c.id_modulo").
+		Joins("INNER JOIN configuracion.ref_modulos_tenant m ON m.id_ref = c.id_modulo").
 		Joins("INNER JOIN comprobantes.ref_tipo_operacion o ON o.id = c.id_tipo_operacion").
 		Where("c.id = ?", id).
 		Order("c.id DESC").
@@ -110,7 +108,7 @@ func ListComprobanteById(db *gorm.DB, id int64) ([]ComprobanteResponse, error) {
 	}
 
 	if results == nil {
-		results = []ComprobanteResponse{}
+		results = []ComprobanteResponseFull{}
 	}
 
 	return results, nil
@@ -120,9 +118,8 @@ func UpdateComprobante(db *gorm.DB, req *ComprobanteUpdateRequest, id int64) (in
 
 	data := map[string]interface{}{
 		"nombre_comprobante":  req.Nombre,
-		"pregijo_comprobante": req.Prefijo,
-		"consecutivo_inicial": req.ConsecutivoFinal,
-		"consecutivo_final":   req.ConsecutivoFinal,
+		"prefijo_comprobante": req.Prefijo,
+		"consecutivo_inicial": req.ConsecutivoInicio,
 		"consecutivo_actual":  0,
 		"consecutivo_fin":     req.ConsecutivoFinal,
 		"permite_anulacion":   req.PermiteAnular,
@@ -131,8 +128,8 @@ func UpdateComprobante(db *gorm.DB, req *ComprobanteUpdateRequest, id int64) (in
 		"token":               req.Token,
 		"resolucion":          req.Resolucion,
 		"is_active":           req.IsActive,
-		"update_at":           time.Now(),
-		"update_by":           req.UserID,
+		"updated_at":          time.Now(),
+		"updated_by":          req.UserID,
 		"id_empresa":          req.EmpresaID,
 		"id_sede":             req.SedeID,
 	}

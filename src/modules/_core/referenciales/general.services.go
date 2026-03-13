@@ -89,7 +89,36 @@ func GetModulosComprobantes(db *gorm.DB) ([]ModuleComprobantes, error) {
 	return ListModuleComprobantes(db)
 }
 
+func GetTipoOperacion(db *gorm.DB, id int64) ([]TipoOperacion, error) {
+	return ListTipoOperaciones(db, id)
+}
+
 // === GESTIONES === //
 func GetNivelesCaso(db *gorm.DB) ([]PrioridadTicket, error) {
 	return ListPrioridadTicket(db)
+}
+
+func GetEstadosCaso(db *gorm.DB) ([]EstadoTicket, error) {
+	return ListEstadosTicket(db)
+}
+
+func GetColaboradores(db *gorm.DB) ([]Colaboradores, error) {
+	return ListColaboradores(db)
+}
+
+// ==== BODEGAS === ///
+func GetTipoBodega(db *gorm.DB) ([]TipoBodega, error) {
+	return ListTipoBodega(db)
+}
+
+func GetUnidadesMedida(db *gorm.DB) ([]UnidadeMedida, error) {
+	return ListUnidadesMedida(db)
+}
+
+func GetGrupoArticulos(db *gorm.DB) ([]GrupoArticulos, error) {
+	return ListGrupoArticulos(db)
+}
+
+func GetPresentacionArticulos(db *gorm.DB) ([]Presentacionrticulos, error) {
+	return ListPresentacionArticulos(db)
 }

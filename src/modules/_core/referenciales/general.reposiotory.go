@@ -469,7 +469,7 @@ func ListEstadoModule() ([]EstadoModulo, error) {
 func ListModuleComprobantes(db *gorm.DB) ([]ModuleComprobantes, error) {
 	var results []ModuleComprobantes
 
-	err := database.GormDB.
+	err := db.
 		Table("configuracion.ref_modulos_tenant").
 		Order("id ASC").Scan(&results).Error
 
@@ -484,12 +484,12 @@ func ListModuleComprobantes(db *gorm.DB) ([]ModuleComprobantes, error) {
 	return results, nil
 }
 
-// ===== GESTIONES ======== //
-func ListPrioridadTicket(db *gorm.DB) ([]PrioridadTicket, error) {
-	var results []PrioridadTicket
+func ListTipoOperaciones(db *gorm.DB, id int64) ([]TipoOperacion, error) {
+	var results []TipoOperacion
 
 	err := db.
-		Table("gestiones.cfg_niveles_caso").
+		Table("comprobantes.ref_tipo_operacion").
+		Where("id_modulo = ?", id).
 		Order("id ASC").Scan(&results).Error
 
 	if err != nil {
@@ -497,7 +497,144 @@ func ListPrioridadTicket(db *gorm.DB) ([]PrioridadTicket, error) {
 	}
 
 	if results == nil {
+		results = []TipoOperacion{}
+	}
+
+	return results, nil
+}
+
+// ===== GESTIONES ======== //
+func ListPrioridadTicket(db *gorm.DB) ([]PrioridadTicket, error) {
+	var results []PrioridadTicket
+
+	err := db.
+		Table("gestiones.cfg_niveles_caso").
+		Order("orden ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
 		results = []PrioridadTicket{}
+	}
+
+	return results, nil
+}
+
+func ListEstadosTicket(db *gorm.DB) ([]EstadoTicket, error) {
+	var results []EstadoTicket
+
+	err := db.
+		Table("gestiones.cfg_estados_ticket").
+		Order("orden ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []EstadoTicket{}
+	}
+
+	return results, nil
+}
+
+func ListColaboradores(db *gorm.DB) ([]Colaboradores, error) {
+	var results []Colaboradores
+
+	err := db.
+		Table("configuracion.cfg_terceros t").
+		Select(`
+			t.id,
+			CASE
+				WHEN t.id_tipo_persona = 1 THEN
+					TRIM(CONCAT_WS(' ', t.primer_nombre, t.segundo_nombre, t.primer_apellido, t.segundo_apellido))
+				WHEN t.id_tipo_persona = 2 THEN
+					t.razon_social
+				ELSE ''	
+			END as nombre`).
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []Colaboradores{}
+	}
+
+	return results, nil
+}
+
+// ===== INVENTARIO ====== //
+func ListTipoBodega(db *gorm.DB) ([]TipoBodega, error) {
+	var results []TipoBodega
+
+	err := db.
+		Table("inventario.ref_tipo_bodega").
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []TipoBodega{}
+	}
+
+	return results, nil
+}
+
+func ListUnidadesMedida(db *gorm.DB) ([]UnidadeMedida, error) {
+	var results []UnidadeMedida
+
+	err := db.
+		Table("inventario.ref_unidad_medidas").
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []UnidadeMedida{}
+	}
+
+	return results, nil
+}
+
+func ListGrupoArticulos(db *gorm.DB) ([]GrupoArticulos, error) {
+	var results []GrupoArticulos
+
+	err := db.
+		Table("inventario.cfg_grupo_articulos").
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []GrupoArticulos{}
+	}
+
+	return results, nil
+}
+
+func ListPresentacionArticulos(db *gorm.DB) ([]Presentacionrticulos, error) {
+	var results []Presentacionrticulos
+
+	err := db.
+		Table("inventario.ref_presentacion_articulo").
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []Presentacionrticulos{}
 	}
 
 	return results, nil

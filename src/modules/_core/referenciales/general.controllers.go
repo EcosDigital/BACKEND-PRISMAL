@@ -414,6 +414,8 @@ func GetModulesComprobanteController(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+//==== GESTIONES ========//
+
 func GetNivelesTicketController(c *fiber.Ctx) error {
 
 	//obtiene base de datos
@@ -425,6 +427,153 @@ func GetNivelesTicketController(c *fiber.Ctx) error {
 	}
 
 	result, err := GetNivelesCaso(db)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}
+
+func GetTipoOperacionController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	idParam := c.Params("id")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID invalido"})
+	}
+
+	result, err := GetTipoOperacion(db, id)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}
+
+func GetEstadoTicketController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	result, err := GetEstadosCaso(db)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}
+
+func GetColaboradoresController(c *fiber.Ctx) error {
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	result, err := GetColaboradores(db)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}
+
+//===== INVENTARIO ====== //
+
+func GetTipoBodegaController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	result, err := GetTipoBodega(db)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}
+
+func GetUnidadesMedidaController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	result, err := GetUnidadesMedida(db)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}
+
+func GetGrupoArticulosController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	result, err := GetGrupoArticulos(db)
+	if err != nil {
+		logging.Info.Printf("Hubo un error %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(result)
+}
+
+func GetPresentacionArticulosController(c *fiber.Ctx) error {
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	result, err := GetPresentacionArticulos(db)
 	if err != nil {
 		logging.Info.Printf("Hubo un error %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

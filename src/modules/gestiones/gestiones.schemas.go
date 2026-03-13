@@ -40,3 +40,27 @@ type TicketFiltros struct {
 	Numero        string `query:"numero"`
 	SoloAsignados bool   `query:"solo_asignados"`
 }
+
+type GestionRequest struct {
+	Comentario    string `json:"comentario"         validate:"required,min=3"`
+	IDEstadoNuevo int    `json:"id_estado_nuevo"    validate:"required,gt=0"`
+	UserID        int64  `json:"user_id"            validate:"omitempty"`
+}
+
+type GestionResponse struct {
+	ID         int64  `json:"id"`
+	IDTicket   int64  `json:"id_ticket"`
+	Comentario string `json:"comentario"`
+	// Estado que tenía el ticket al momento de esta gestión
+	IDEstadoAnterior int    `json:"id_estado_anterior"`
+	EstadoAnterior   string `json:"estado_anterior"`
+	ColorAnterior    string `json:"color_anterior"`
+	// Estado al que se cambió (puede ser igual al anterior si solo es comentario)
+	IDEstadoNuevo int    `json:"id_estado_nuevo"`
+	EstadoNuevo   string `json:"estado_nuevo"`
+	ColorNuevo    string `json:"color_nuevo"`
+	// Autor
+	IDAutor  int64  `json:"id_autor"`
+	Autor    string `json:"autor"`
+	CreadoEn string `json:"created_at"`
+}

@@ -19,7 +19,7 @@ func FilterLastComprobantes(db *gorm.DB) ([]ComprobanteResponse, error) {
 	return ListComprobantesLast(db)
 }
 
-func FilterComprobanteByID(db *gorm.DB, id int64) ([]ComprobanteResponse, error) {
+func FilterComprobanteByID(db *gorm.DB, id int64) ([]ComprobanteResponseFull, error) {
 	return ListComprobanteById(db, id)
 }
 

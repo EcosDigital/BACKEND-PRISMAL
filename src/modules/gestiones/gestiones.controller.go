@@ -107,3 +107,61 @@ func FindTicketByIDController(c *fiber.Ctx) error {
 
 	return c.JSON(results)
 }
+
+func CreateGestionController(c *fiber.Ctx) error {
+
+	ticketID, err := parseID(c, "id")
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "ID de ticket inválido"})
+	}
+
+	var req GestionRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
+	}
+
+	req.UserID = int64(middlewares.GetUserID(c))
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	newID, err := RegisterGestion(db, ticketID, &req)
+	if err != nil {
+		logging.Error.Printf("CreateGestionController error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusCreated).JSON(fiber.Map{
+		"message": "Gestión registrada exitosamente",
+		"id":      newID,
+	})
+}
+
+func FindGestionesController(c *fiber.Ctx) error {
+
+	ticketID, err := parseID(c, "id")
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "ID de ticket inválido"})
+	}
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	results, err := FilterGestiones(db, ticketID)
+	if err != nil {
+		logging.Error.Printf("FindGestionesController error: %v", err)
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(results)
+}
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
+
+func parseID(c *fiber.Ctx, param string) (int64, error) {
+	return strconv.ParseInt(c.Params(param), 10, 64)
+}
