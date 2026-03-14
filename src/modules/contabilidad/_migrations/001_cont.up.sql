@@ -1,98 +1,126 @@
-CREATE SCHEMA comprobantes;
+CREATE SCHEMA IF NOT EXISTS contabilidad;
 
-CREATE TABLE IF NOT EXISTS comprobantes.ref_tipo_operacion(
+CREATE TABLE IF NOT EXISTS contabilidad.ref_naturaleza_contable(
     id SERIAL PRIMARY KEY,
-    id_modulo INT NOT NULL,
-    nombre VARCHAR(150) NOT NULL,
-    CONSTRAINT uq_ref_tipo_operacion UNIQUE (id_modulo, nombre)
+    nombre VARCHAR(20) NOT NULL UNIQUE
 );
 
---MODULO DE INVENTARIOS DEBE SER EL ID(4)
-INSERT INTO comprobantes.ref_tipo_operacion (id_modulo, nombre) VALUES
-    (4, 'Saldo Inicial'),
-    (4, 'Entrada'),
-    (4, 'Baja'),
-    (4, 'Traslado'),
-    (4, 'Despacho')
-ON CONFLICT (id_modulo, nombre) DO NOTHING;
-
-
-CREATE TABLE IF NOT EXISTS comprobantes.cfg_comprobante(
-    id SERIAL PRIMARY KEY NOT NULL,
-    id_modulo INT NOT NULL,
-    id_tipo_operacion INT NOT NULL REFERENCES comprobantes.ref_tipo_operacion(id),
-    nombre_comprobante VARCHAR(250) NOT NULL,
-    prefijo_comprobante VARCHAR(10) NOT NULL,
-    consecutivo_inicial INT NOT NULL,
-    consecutivo_actual INT NOT NULL,
-    consecutivo_fin INT NULL,
-    permite_anulacion BOOLEAN DEFAULT TRUE,
-    fecha_inicio DATE NOT NULL,
-    fecha_final DATE NULL,
-    token VARCHAR(450) NULL,
-    resolucion VARCHAR(450) NULL,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT NOW(),
-    created_by INT NOT NULL,
-    updated_by INT,
-    updated_at TIMESTAMP,
-    id_empresa INT NOT NULL,
-    id_sede INT NULL,
-    CONSTRAINT uix_cfg_comprobante_prefijo_modulo
-        UNIQUE (prefijo_comprobante, id_modulo),
-    CHECK (fecha_final IS NULL OR fecha_final >= fecha_inicio)
-);
-
-CREATE TABLE IF NOT EXISTS comprobantes.cfg_usuarios_comprobante(
-    id SERIAL PRIMARY KEY NOT NULL,
-    id_comprobante INT NOT NULL REFERENCES comprobantes.cfg_comprobante(id),
-    id_usuario INT NOT NULL REFERENCES seguridad.cfg_usuarios(id),
-    created_at TIMESTAMP DEFAULT NOW(),
-    created_by INT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS comprobantes.ref_estado_comprobante(
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(150) NOT NULL,
-    CONSTRAINT uq_ref_estado_comprobante UNIQUE (nombre)
-);
-
-INSERT INTO comprobantes.ref_estado_comprobante (nombre) VALUES
-    ('BORRADOR'),
-    ('PENDIENTE_AUTORIZACION'),
-    ('AUTORIZADO'),
-    ('APLICADO'),
-    ('ANULADO'),
-    ('RECHAZADO')
+INSERT INTO contabilidad.ref_naturaleza_contable (nombre) values 
+    ('Activo'),
+    ('Pasivo'),
+    ('Patrimonio'),
+    ('Ingreso'),
+    ('Gasto'),
+    ('Costo')
 ON CONFLICT (nombre) DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS contabilidad.cfg_tipo_cuentas(
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(20) NOT NULL UNIQUE,
+    is_active BOOLEAN DEFAULT true
+);
 
-CREATE TABLE IF NOT EXISTS comprobantes.mov_gestion_comprobantes(
-    id SERIAL PRIMARY KEY NOT NULL,
-    id_comprobante INT NOT NULL REFERENCES comprobantes.cfg_comprobante(id),
-    id_estado_comprobante INT REFERENCES comprobantes.ref_estado_comprobante(id),
-    autorizado BOOLEAN DEFAULT FALSE,
-    fecha_autorizacion DATE,
-    documento_soporte VARCHAR(250),
-    user_autoriza INT,
-    id_tercero INT REFERENCES configuracion.cfg_terceros(id),
-    fecha_movimiento DATE,
-    fecha_creacion TIMESTAMP,
-    valor_anterior NUMERIC(14,2),
-    valor_movimiento NUMERIC(14,2),
-    valor_descuento NUMERIC(14,2),
-    valor_impuesto NUMERIC(14,2),
-    valor_total_comprobante NUMERIC(14,2),
-    consecutivo_comprobante INT,
-    prefijo_comprobante VARCHAR(10),
-    id_user_anulo INT,
-    fecha_anulacion TIMESTAMP,
-    motivo_anulacion TEXT,
-    observaciones TEXT,
+INSERT INTO contabilidad.cfg_tipo_cuentas (nombre) values 
+    ('Inventario'),
+    ('Caja'),
+    ('Bancos'),
+    ('Cuentas por Cobrar'),
+    ('Cuentas por Pagar'),
+    ('Costo Venta')
+ON CONFLICT (nombre) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS contabilidad.ref_nivel_cuenta(
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(20) NOT NULL UNIQUE
+);
+
+INSERT INTO contabilidad.ref_nivel_cuenta (nombre) values 
+    ('Nivel 1'),
+    ('Nivel 2'),
+    ('Nivel 3'),
+    ('Nivel 4')
+ON CONFLICT (nombre) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS contabilidad.cfg_cuentas_contables(
+    id SERIAL PRIMARY KEY,
+    codigo_cuenta VARCHAR(20) NOT NULL,
+    nombre_cuenta VARCHAR(250) NOT NULL,
+    id_cuenta_padre INT NULL REFERENCES contabilidad.cfg_cuentas_contables(id),
+    id_naturaleza INT NOT NULL REFERENCES contabilidad.ref_naturaleza_contable(id),
+    id_tipo_cuenta INT NULL REFERENCES contabilidad.cfg_tipo_cuentas(id),
+    id_nivel_cuenta INT NOT NULL REFERENCES contabilidad.ref_nivel_cuenta(id),
+    permite_movimientos BOOLEAN DEFAULT TRUE,
+    requiere_tercero BOOLEAN DEFAULT FALSE,
+    requiere_centro_costo BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT NOW(),
     created_by INT NOT NULL,
-    updated_by INT,
-    updated_at TIMESTAMP,
+    updated_at TIMESTAMP NULL,
+    updated_by INT NULL,
     id_empresa INT NOT NULL,
-    id_sede INT NULL
+    id_sede INT NULL,
+    CONSTRAINT uq_cuenta_empresa
+        UNIQUE (id_empresa, codigo_cuenta)
+);
+
+
+CREATE TABLE IF NOT EXISTS contabilidad.ref_conceptos_articulos(
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(450) NOT NULL unique
+);
+
+INSERT INTO contabilidad.ref_conceptos_articulos (nombre) VALUES
+    ('Cuenta Inventario'),
+    ('Cuenta Costo'),
+    ('Cuenta Gasto')
+ON CONFLICT (nombre) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS contabilidad.cfg_cuentas_grupo_articulos (
+    id SERIAL PRIMARY KEY,
+    id_sede INT NOT NULL REFERENCES configuracion.cfg_sedes(id),
+    id_bodega INT NOT NULL,
+    id_tipo_articulo INT NOT NULL,
+    id_concepto_articulo INT NOT NULL REFERENCES contabilidad.ref_conceptos_articulos(id),
+    id_cuenta_contable INT NOT NULL REFERENCES contabilidad.cfg_cuentas_contables(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    created_by INT NOT NULL,
+    updated_at TIMESTAMP NULL,
+    updated_by INT NULL,
+    id_empresa INT NOT NULL,
+    CONSTRAINT uq_cuentas_grupo_articulo
+        UNIQUE (id_empresa, id_tipo_articulo, id_concepto_articulo)
+);
+
+CREATE TABLE IF NOT EXISTS contabilidad.ref_conceptos_generales(
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(450) NOT NULL unique
+);
+
+INSERT INTO contabilidad.ref_conceptos_generales (nombre) VALUES
+    ('Cuenta Cierre de Cajas'),
+    ('Cuenta Ajuste Inicial')
+ON CONFLICT (nombre) DO NOTHING;
+
+CREATE TABLE contabilidad.cfg_cuentas_generales(
+    id SERIAL PRIMARY KEY,
+    id_concepto_general INT NOT NULL REFERENCES contabilidad.ref_conceptos_generales(id),
+    id_cuenta_contable INT NOT NULL REFERENCES contabilidad.cfg_cuentas_contables(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    created_by INT NOT NULL,
+    updated_at TIMESTAMP NULL,
+    updated_by INT NULL,
+    id_sede INT NULL,
+    id_empresa INT NOT NULL,
+    CONSTRAINT uq_cuentas_generales
+        UNIQUE (id_empresa, id_concepto_general)
+);
+
+CREATE TABLE contabilidad.mov_movimientos_contables(
+    id SERIAL PRIMARY KEY,
+    id_mov_comprobante INT NOT NULL REFERENCES comprobantes.mov_gestion_comprobantes(id),
+    id_cuenta_contable INT NOT NULL REFERENCES contabilidad.cfg_cuentas_contables(id),
+    id_tercero INT NULL REFERENCES configuracion.cfg_terceros(id),
+    id_centro_costo INT NULL REFERENCES costos.cfg_centros_costo(id)
+    valor NUMERIC(14,2) NOT NULL,
+    Naturaleza CHAR(1) NOT NULL CHECK (naturaleza IN ('D','C')) -- Débito o Crédito
 );

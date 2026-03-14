@@ -1,3 +1,5 @@
+CREATE SCHEMA IF NO EXISTS contabilidad
+
 CREATE TABLE IF NOT EXISTS contabilidad.ref_tipo_impuesto (
     id SERIAL PRIMARY KEY,
     codigo VARCHAR(20)  NOT NULL UNIQUE,
