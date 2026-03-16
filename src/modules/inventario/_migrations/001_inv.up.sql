@@ -185,6 +185,10 @@ CREATE TABLE IF NOT EXISTS inventario.mov_movimientos_detalle (
     marca VARCHAR(150) NULL,
     lote VARCHAR(100) NULL,
     cantidad NUMERIC(14,4) NOT NULL CHECK (cantidad > 0),
+    valor_unitario  NUMERIC(14,4) NOT NULL DEFAULT 0,
+    valor_impuesto  NUMERIC(14,2) NOT NULL DEFAULT 0,
+    valor_total     NUMERIC(14,2) GENERATED ALWAYS AS
+        (ROUND(cantidad * valor_unitario + valor_impuesto, 2)) STORED,
     observacion TEXT  NULL,
     created_at TIMESTAMP  NOT NULL DEFAULT NOW(),
     created_by INT NOT NULL

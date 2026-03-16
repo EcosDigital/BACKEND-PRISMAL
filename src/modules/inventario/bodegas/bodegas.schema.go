@@ -2,6 +2,7 @@ package bodega
 
 type BodegaRequest struct {
 	IDTipoBodega      int     `json:"id_tipo_bodega" validate:"gt=0"`
+	IDSede            int     `json:"id_sede" validate:"gt=0"`
 	Codigo            string  `json:"codigo" validate:"required,min=1,max=10"`
 	Nombre            string  `json:"nombre"               validate:"required,min=3"`
 	Descripcion       string  `json:"descripcion"          validate:"omitempty"`

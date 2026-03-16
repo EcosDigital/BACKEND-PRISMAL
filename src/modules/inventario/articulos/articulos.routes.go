@@ -22,4 +22,6 @@ func Rutas_articulos(r fiber.Router) {
 	protected.Put("/articulos/:id",
 		middlewares.VallidateBody(&ArticuloUpdateRequest{}), ChangeArticuloController)
 
+	protected.Get("/search", SearchArticulosController)
+
 }

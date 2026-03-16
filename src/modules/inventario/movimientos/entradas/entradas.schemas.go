@@ -102,3 +102,9 @@ type ArticuloExistencia struct {
 	CostoPromedio float64   `json:"costo_promedio"`
 	_             time.Time // evita import no usado
 }
+
+type AnulacionRequest struct {
+	Motivo    string `json:"motivo"    validate:"required,min=5"`
+	UserID    int64  `json:"user_id"   validate:"omitempty"`
+	EmpresaID int64  `json:"empresa_id" validate:"omitempty"`
+}

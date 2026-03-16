@@ -7,7 +7,6 @@ import (
 )
 
 // RegisterEntrada llama la función PostgreSQL fn_registrar_entrada
-// pasando el arreglo de detalle como un array de tipo compuesto.
 func RegisterEntrada(db *gorm.DB, req *EntradaRequest) (*EntradaResponse, error) {
 
 	// Construir el array de detalle en formato PostgreSQL:
@@ -124,7 +123,7 @@ func ListEntradas(db *gorm.DB, empresaID int64) ([]EntradaListResponse, error) {
 			mg.consecutivo_comprobante  AS consecutivo,
 			mg.prefijo_comprobante      AS prefijo,
 			m.fecha_movimiento::text    AS fecha_movimiento,
-			COALESCE(t.razon_social, t.nombres || ' ' || t.apellidos, '') AS proveedor,
+			COALESCE(t.razon_social, t.primer_nombre || ' ' || t.primer_apellido, '') AS proveedor,
 			COALESCE(mg.documento_soporte, '')  AS referencia_externa,
 			b.nombre                    AS bodega,
 			COALESCE(mg.valor_total_comprobante, 0) AS valor_total,
@@ -280,4 +279,17 @@ func ListImpuestos(db *gorm.DB, empresaID int64) ([]RefImpuesto, error) {
 	}
 
 	return results, nil
+}
+
+func AnularEntrada(db *gorm.DB, idMovimiento int64, req *AnulacionRequest) error {
+
+	err := db.Exec(
+		`SELECT inventario.fn_anular_entrada($1, $2, $3, $4)`,
+		idMovimiento,
+		req.Motivo,
+		req.UserID,
+		req.EmpresaID,
+	).Error
+
+	return err
 }

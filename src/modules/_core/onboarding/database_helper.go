@@ -142,10 +142,40 @@ func splitSQLStatements(content string) []string {
 	for i < len(content) {
 		char := content[i]
 
-		// Manejar comillas simples
+		// ── Saltar comentarios de línea (--) ──────────────────────────
+		// Solo si no estamos dentro de ningún string
+		if char == '-' && !inSingleQuote && !inDollarQuote &&
+			i+1 < len(content) && content[i+1] == '-' {
+			// Avanzar hasta el fin de línea sin escribir en current
+			for i < len(content) && content[i] != '\n' {
+				i++
+			}
+			// Escribir el salto de línea si existe (preserva formato)
+			if i < len(content) {
+				current.WriteByte(content[i])
+				i++
+			}
+			continue
+		}
+
+		// ── Saltar comentarios de bloque (/* ... */) ──────────────────
+		if char == '/' && !inSingleQuote && !inDollarQuote &&
+			i+1 < len(content) && content[i+1] == '*' {
+			i += 2
+			for i < len(content) {
+				if content[i] == '*' && i+1 < len(content) && content[i+1] == '/' {
+					i += 2
+					break
+				}
+				i++
+			}
+			continue
+		}
+
+		// ── Manejar comillas simples ───────────────────────────────────
 		if char == '\'' && !inDollarQuote {
 			if i+1 < len(content) && content[i+1] == '\'' {
-				// Escape ''
+				// Escape de comilla: ''
 				current.WriteByte(char)
 				i++
 				current.WriteByte('\'')
@@ -158,9 +188,8 @@ func splitSQLStatements(content string) []string {
 			continue
 		}
 
-		// Manejar dollar quotes ($tag$ o $$)
+		// ── Manejar dollar quotes ($$ o $tag$) ────────────────────────
 		if char == '$' && !inSingleQuote {
-			// Buscar el tag completo
 			tag := "$"
 			j := i + 1
 			for j < len(content) && content[j] != '$' {
@@ -172,26 +201,23 @@ func splitSQLStatements(content string) []string {
 			}
 
 			if !inDollarQuote {
-				// Abriendo dollar quote
 				inDollarQuote = true
 				dollarTag = tag
 				current.WriteString(tag)
 				i = j + 1
 			} else if tag == dollarTag {
-				// Cerrando dollar quote
 				inDollarQuote = false
 				dollarTag = ""
 				current.WriteString(tag)
 				i = j + 1
 			} else {
-				// Dollar quote diferente, seguir
 				current.WriteByte(char)
 				i++
 			}
 			continue
 		}
 
-		// Dividir por ; solo si no estamos en strings
+		// ── Separador de statements ───────────────────────────────────
 		if char == ';' && !inSingleQuote && !inDollarQuote {
 			stmt := strings.TrimSpace(current.String())
 			if stmt != "" {
@@ -206,7 +232,7 @@ func splitSQLStatements(content string) []string {
 		i++
 	}
 
-	// Último statement
+	// Último statement sin ; final
 	if current.Len() > 0 {
 		stmt := strings.TrimSpace(current.String())
 		if stmt != "" {

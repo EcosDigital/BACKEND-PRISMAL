@@ -3,9 +3,9 @@ package search
 import (
 	"net/http"
 
-	"github.com/ecosistema/core/src/database"
 	"github.com/ecosistema/core/src/shared/logging"
 	"github.com/ecosistema/core/src/shared/middlewares"
+	"github.com/ecosistema/core/src/shared/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -24,7 +24,12 @@ func FindDataDynamicsController(c *fiber.Ctx) error {
 	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
 	req.SedeID = int64(middlewares.GetSedeID(c))
 
-	results, err := FilterDynamic(database.DB, req)
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	results, err := FilterDynamic(db, req)
 	if err != nil {
 
 		logging.Error.Printf("Hubo un error: %v", err)

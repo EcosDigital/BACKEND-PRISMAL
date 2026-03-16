@@ -24,7 +24,7 @@ func CreateBodega(db *gorm.DB, req *BodegaRequest) (int64, error) {
 		"created_at":          time.Now(),
 		"created_by":          req.UserID,
 		"id_empresa":          req.EmpresaID,
-		"id_sede":             req.SedeID,
+		"id_sede":             req.IDSede,
 	}
 
 	tx := db.Table("inventario.cfg_bodegas").Create(&data)

@@ -30,3 +30,7 @@ func EditArticulo(db *gorm.DB, id int64, req *ArticuloUpdateRequest) (int64, err
 
 	return UpdateArticulo(db, req, id)
 }
+
+func FilterSearchArticulos(db *gorm.DB, nombreCodigo string, empresaID int64) ([]ArticuloResponse, error) {
+	return SearchArticulos(db, nombreCodigo, empresaID)
+}

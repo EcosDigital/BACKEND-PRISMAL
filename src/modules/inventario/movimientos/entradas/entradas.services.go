@@ -41,3 +41,7 @@ func FilterImpuestos(db *gorm.DB, empresaID int64) ([]RefImpuesto, error) {
 func FilterExistenciaArticulo(db *gorm.DB, idArticulo int64, idBodega int64, empresaID int64) (*ArticuloExistencia, error) {
 	return GetExistenciaArticulo(db, idArticulo, idBodega, empresaID)
 }
+
+func ProcessAnulacion(db *gorm.DB, idMovimiento int64, req *AnulacionRequest) error {
+	return AnularEntrada(db, idMovimiento, req)
+}

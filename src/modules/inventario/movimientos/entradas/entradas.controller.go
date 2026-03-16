@@ -18,6 +18,8 @@ func CreateEntradaController(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
 	}
 
+	logging.Info.Printf("IDTercero recibido: %v", req.IDTercero)
+
 	req.UserID = int64(middlewares.GetUserID(c))
 	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
 	req.SedeID = int64(middlewares.GetSedeID(c))
@@ -146,4 +148,36 @@ func FindExistenciaArticuloController(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(result)
+}
+
+func AnularEntradaController(c *fiber.Ctx) error {
+
+	idParam := c.Params("id")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+	}
+
+	var req AnulacionRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
+	}
+
+	req.UserID = int64(middlewares.GetUserID(c))
+	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := ProcessAnulacion(db, id, &req); err != nil {
+		logging.Error.Printf("Error anulando entrada %d: %v", id, err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Entrada anulada exitosamente",
+	})
 }

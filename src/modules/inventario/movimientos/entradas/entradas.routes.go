@@ -1,6 +1,7 @@
 package entradas
 
 import (
+	reportes_inv "github.com/ecosistema/core/src/modules/inventario/movimientos/_reportes"
 	"github.com/ecosistema/core/src/shared/middlewares"
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,6 +21,14 @@ func Rutas_entradas(r fiber.Router) {
 
 	protected.Get("/:id",
 		FindEntradaByIDController)
+
+	// ─── Reporte / impresión ──────────────────────────────────────────────────
+	// GET /inventario/entradas/:id/reporte
+	protected.Get("/:id/reporte", reportes_inv.GetEntradaReporteController)
+
+	// PUT /inventario/entradas/:id/anular
+	protected.Put("/:id/anular",
+		middlewares.VallidateBody(&AnulacionRequest{}), AnularEntradaController)
 
 	// ─── Referencias para el formulario ──────────────────────────────────────
 	protected.Get("/ref/comprobantes",

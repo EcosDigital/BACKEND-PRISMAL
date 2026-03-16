@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS comprobantes.cfg_comprobante(
     consecutivo_actual INT NOT NULL,
     consecutivo_fin INT NULL,
     permite_anulacion BOOLEAN DEFAULT TRUE,
+    aplica_mov_contable BOOLEAN DEFAULT FALSE,
     fecha_inicio DATE NOT NULL,
     fecha_final DATE NULL,
     token VARCHAR(450) NULL,

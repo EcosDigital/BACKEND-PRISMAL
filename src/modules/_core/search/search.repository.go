@@ -1,18 +1,17 @@
 package search
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
 	"github.com/ecosistema/core/src/shared/logging"
+	"gorm.io/gorm"
 )
 
-func ListDynamics(db *sql.DB, data SearchDynamics) ([]interface{}, error) {
-	var results []interface{}
+func ListDynamics(db *gorm.DB, data SearchDynamics) ([]interface{}, error) {
 
 	query := `SELECT * FROM configuracion.qry_busquedas_dinamicas(
-		operacion => $1, 
+		operacion => $1,
 		nombre_codigo => $2,
 		id_tipo_registro => $3,
 		fecha_inicial => $4,
@@ -22,7 +21,7 @@ func ListDynamics(db *sql.DB, data SearchDynamics) ([]interface{}, error) {
 		aplicar_limit => $8
 	)`
 
-	// Preparar los parámetros con verificación de nil
+	// ── Preparar parámetros — nil cuando no vienen ────────────────
 	var nombreCodigo interface{}
 	if data.NombreCodigo != "" {
 		nombreCodigo = data.NombreCodigo
@@ -58,7 +57,8 @@ func ListDynamics(db *sql.DB, data SearchDynamics) ([]interface{}, error) {
 		aplicarLimit = *data.Filters.AplicarLimit
 	}
 
-	rows, err := db.Query(
+	// ── Ejecutar con GORM Raw ─────────────────────────────────────
+	rawDB := db.Raw(
 		query,
 		data.Operacion,
 		nombreCodigo,
@@ -69,19 +69,24 @@ func ListDynamics(db *sql.DB, data SearchDynamics) ([]interface{}, error) {
 		active,
 		aplicarLimit,
 	)
+
+	rows, err := rawDB.Rows()
+
 	if err != nil {
-		logging.Error.Printf("error %v", err)
+		logging.Error.Printf("error ejecutando query: %v", err)
 		return nil, fmt.Errorf("error ejecutando query: %w", err)
 	}
 	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
-		logging.Error.Printf("error %v", err)
+		logging.Error.Printf("error obteniendo columnas: %v", err)
 		return nil, fmt.Errorf("error obteniendo columnas: %w", err)
 	}
 
-	// Iterar sobre las filas
+	var results []interface{}
+
+	// ── Iterar filas ──────────────────────────────────────────────
 	for rows.Next() {
 		values := make([]interface{}, len(columns))
 		valuePtrs := make([]interface{}, len(columns))
@@ -91,14 +96,16 @@ func ListDynamics(db *sql.DB, data SearchDynamics) ([]interface{}, error) {
 		}
 
 		if err := rows.Scan(valuePtrs...); err != nil {
-			logging.Error.Printf("error %v", err)
+			logging.Error.Printf("error escaneando fila: %v", err)
 			return nil, fmt.Errorf("error escaneando la fila: %w", err)
 		}
 
+		// ── Caso: una sola columna JSON (función PostgreSQL retorna JSON) ──
 		if len(columns) == 1 {
 			val := values[0]
 
 			if b, ok := val.([]byte); ok {
+				// Intentar como objeto con clave qry_busquedas_dinamicas
 				var jsonWrapper map[string]interface{}
 				if err := json.Unmarshal(b, &jsonWrapper); err == nil {
 					if resultado, exists := jsonWrapper["qry_busquedas_dinamicas"]; exists && len(jsonWrapper) == 1 {
@@ -112,6 +119,7 @@ func ListDynamics(db *sql.DB, data SearchDynamics) ([]interface{}, error) {
 					}
 				}
 
+				// Intentar como array JSON
 				var jsonData []map[string]interface{}
 				if err := json.Unmarshal(b, &jsonData); err == nil {
 					for _, item := range jsonData {
@@ -120,6 +128,7 @@ func ListDynamics(db *sql.DB, data SearchDynamics) ([]interface{}, error) {
 					return results, nil
 				}
 
+				// Intentar como objeto JSON simple
 				var jsonObj map[string]interface{}
 				if err := json.Unmarshal(b, &jsonObj); err == nil {
 					if resultado, exists := jsonObj["qry_busquedas_dinamicas"]; exists && len(jsonObj) == 1 {
@@ -137,22 +146,21 @@ func ListDynamics(db *sql.DB, data SearchDynamics) ([]interface{}, error) {
 			}
 		}
 
+		// ── Caso general: múltiples columnas ──────────────────────
 		rowMap := make(map[string]interface{})
 		for i, col := range columns {
 			val := values[i]
-
 			if b, ok := val.([]byte); ok {
 				rowMap[col] = string(b)
 			} else {
 				rowMap[col] = val
 			}
 		}
-
 		results = append(results, rowMap)
 	}
 
 	if err := rows.Err(); err != nil {
-		logging.Error.Printf("error %v", err)
+		logging.Error.Printf("error iterando filas: %v", err)
 		return nil, fmt.Errorf("error iterando filas: %w", err)
 	}
 

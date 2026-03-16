@@ -1,4 +1,4 @@
-CREATE SCHEMA IF NO EXISTS contabilidad
+CREATE SCHEMA IF NOT EXISTS contabilidad;
 
 CREATE TABLE IF NOT EXISTS contabilidad.ref_tipo_impuesto (
     id SERIAL PRIMARY KEY,

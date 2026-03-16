@@ -141,3 +141,38 @@ func UpdateArticulo(db *gorm.DB, req *ArticuloUpdateRequest, id int64) (int64, e
 
 	return id, nil
 }
+
+func SearchArticulos(db *gorm.DB, nombreCodigo string, empresaID int64) ([]ArticuloResponse, error) {
+
+	var results []ArticuloResponse
+
+	q := db.
+		Table("inventario.cfg_articulos a").
+		Select(`
+			a.id,
+			a.codigo,
+			a.nombre,
+			g.nombre  AS grupo_articulo,
+			u.nombre  AS unidad_medida,
+			a.factor_unidad_base,
+			a.is_active`).
+		Joins("INNER JOIN inventario.cfg_grupo_articulos g ON g.id = a.id_tipo_articulo").
+		Joins("INNER JOIN inventario.ref_unidad_medidas u ON u.id = a.id_unidad_medida").
+		Where("a.id_empresa = ? AND a.is_active = true", empresaID)
+
+	if nombreCodigo != "" {
+		like := "%" + nombreCodigo + "%"
+		q = q.Where("a.nombre ILIKE ? OR a.codigo ILIKE ?", like, like)
+	}
+
+	err := q.Order("a.nombre ASC").Limit(30).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []ArticuloResponse{}
+	}
+
+	return results, nil
+}

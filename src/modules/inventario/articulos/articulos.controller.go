@@ -116,3 +116,22 @@ func ChangeArticuloController(c *fiber.Ctx) error {
 		"id":      uptID,
 	})
 }
+
+func SearchArticulosController(c *fiber.Ctx) error {
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	empresaID := int64(middlewares.GetEmpresaID(c))
+	nombreCodigo := c.Query("q", "")
+
+	results, err := FilterSearchArticulos(db, nombreCodigo, empresaID)
+	if err != nil {
+		logging.Error.Printf("Error buscando artículos: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"data": results})
+}
