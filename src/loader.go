@@ -1,6 +1,7 @@
 package loader
 
 import (
+	"github.com/ecosistema/core/src/modules/RRHH"
 	core "github.com/ecosistema/core/src/modules/_core"
 	"github.com/ecosistema/core/src/modules/inventario"
 	"github.com/gofiber/fiber/v2"
@@ -18,4 +19,7 @@ func SetupRoutes(app *fiber.App) {
 
 	//inventario
 	inventario.RegisterInvetarioRoutes(v1)
+
+	//RRHH
+	RRHH.RegisterRRHHRoutes(v1)
 }
