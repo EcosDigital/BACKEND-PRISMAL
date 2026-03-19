@@ -120,7 +120,7 @@ CREATE TABLE contabilidad.mov_movimientos_contables(
     id_mov_comprobante INT NOT NULL REFERENCES comprobantes.mov_gestion_comprobantes(id),
     id_cuenta_contable INT NOT NULL REFERENCES contabilidad.cfg_cuentas_contables(id),
     id_tercero INT NULL REFERENCES configuracion.cfg_terceros(id),
-    id_centro_costo INT NULL REFERENCES costos.cfg_centros_costo(id)
+    id_centro_costo INT NULL REFERENCES costos.cfg_centros_costo(id),
     valor NUMERIC(14,2) NOT NULL,
     Naturaleza CHAR(1) NOT NULL CHECK (naturaleza IN ('D','C')) -- Débito o Crédito
 );
