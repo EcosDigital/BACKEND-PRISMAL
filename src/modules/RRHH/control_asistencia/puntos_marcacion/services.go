@@ -144,7 +144,14 @@ func ProcessMarcacion(db *gorm.DB, req *MarcacionRequest) (*MarcacionResponse, e
 	)
 	distanciaMetros := distanciaKm * 1000
 
-	if distanciaMetros > float64(punto.RadioMetros) {
+	const maxPrecisionTolerable = 200
+	precisionEfectiva := req.Precision
+	if precisionEfectiva > maxPrecisionTolerable {
+		precisionEfectiva = maxPrecisionTolerable
+	}
+	radioEfectivo := float64(punto.RadioMetros) + float64(precisionEfectiva)
+
+	if distanciaMetros > radioEfectivo {
 		return nil, ErrFueraDeRadio
 	}
 
