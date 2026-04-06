@@ -39,3 +39,20 @@ type ConfigRolRequest struct {
 	EmpresaID int64  `json:"empresa_id"`
 	SedeID    int64  `json:"sede_id"`
 }
+
+// ConfigRolResponse representa la configuración existente de un rol
+type ConfigRolResponse struct {
+	ID          int64  `json:"id"`
+	IDRol       int64  `json:"id_rol"`
+	IDEmpresa   int64  `json:"id_empresa"`
+	IDSede      int64  `json:"id_sede"`
+	JsonModules []Item `json:"json_modules"`
+	Exists      bool   `json:"exists"`
+}
+
+type UpdateConfigRolRequest struct {
+	Json      []Item `json:"json"`
+	UserID    int64  `json:"user_id"`
+	EmpresaID int64  `json:"empresa_id"`
+	SedeID    int64  `json:"sede_id"`
+}

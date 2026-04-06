@@ -181,3 +181,57 @@ func CreateConfigRolController(c *fiber.Ctx) error {
 	})
 
 }
+
+func GetConfigRolController(c *fiber.Ctx) error {
+	idParam := c.Params("id_rol")
+	idRol, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID de rol inválido"})
+	}
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	config, err := ObtainConfigRol(db, idRol)
+	if err != nil {
+		logging.Error.Printf("Hubo un error: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(config)
+}
+
+func UpdateConfigRolController(c *fiber.Ctx) error {
+	idParam := c.Params("id_rol")
+	idRol, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID de rol inválido"})
+	}
+
+	var req UpdateConfigRolRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"Error": "Json invalido"})
+	}
+
+	req.UserID = int64(middlewares.GetUserID(c))
+	req.EmpresaID = int64(middlewares.GetEmpresaID(c))
+	req.SedeID = int64(middlewares.GetSedeID(c))
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	updatedID, err := ModifyConfigRol(db, idRol, &req)
+	if err != nil {
+		logging.Error.Printf("Hubo un error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Configuración actualizada...",
+		"id":      updatedID,
+	})
+}

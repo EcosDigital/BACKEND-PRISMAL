@@ -3,6 +3,7 @@ package roles
 import (
 	"errors"
 
+	"github.com/ecosistema/core/src/shared/logging"
 	"gorm.io/gorm"
 )
 
@@ -48,8 +49,7 @@ func EditRolUser(db *gorm.DB, id int64, req *RolesRequest) (int64, error) {
 
 }
 
-//* CONFIG  ROLES * //
-
+// * CONFIG  ROLES * //
 func RegisterConfigRoles(db *gorm.DB, req *ConfigRolRequest) (int64, error) {
 
 	//verificar existencia del rol
@@ -71,4 +71,53 @@ func RegisterConfigRoles(db *gorm.DB, req *ConfigRolRequest) (int64, error) {
 
 	return 0, nil
 
+}
+
+func ObtainConfigRol(db *gorm.DB, idRol int64) (*ConfigRolResponse, error) {
+
+	// Verificar que el rol exista
+	rol, err := ListRolUsuarioByID(db, idRol)
+	if err != nil {
+		return nil, err
+	}
+	if len(rol) == 0 {
+		return nil, errors.New("no existe un rol con ese ID")
+	}
+
+	return GetConfigRolByRolID(db, idRol)
+}
+
+func ModifyConfigRol(db *gorm.DB, idRol int64, req *UpdateConfigRolRequest) (int64, error) {
+
+	// Verificar que el rol exista
+	logging.Info.Printf("id: %v", idRol)
+	rol, err := ListRolUsuarioByID(db, idRol)
+	if err != nil {
+		return 0, err
+	}
+	if len(rol) == 0 {
+		return 0, errors.New("no existe un rol con ese ID")
+	}
+
+	// Buscar configuración existente
+	config, err := GetConfigRolByRolID(db, idRol)
+	if err != nil {
+		return 0, err
+	}
+
+	if config.Exists {
+		// Actualizar registro existente
+		return UpdateConfigRol(db, config.ID, req)
+	}
+
+	// Si no existe, crear uno nuevo usando la sede del contexto
+	createReq := &ConfigRolRequest{
+		IDRol:     int(idRol),
+		Sedes:     []int{int(req.SedeID)},
+		Json:      req.Json,
+		UserID:    req.UserID,
+		EmpresaID: req.EmpresaID,
+		SedeID:    req.SedeID,
+	}
+	return RegisterConfigRoles(db, createReq)
 }

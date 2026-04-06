@@ -194,3 +194,78 @@ func RemoveSedesRol(db *gorm.DB, idRol int64) error {
 	return nil
 
 }
+
+func GetConfigRolByRolID(db *gorm.DB, idRol int64) (*ConfigRolResponse, error) {
+
+	type rawRow struct {
+		ID          int64  `gorm:"column:id"`
+		IDRol       int64  `gorm:"column:id_rol"`
+		IDEmpresa   int64  `gorm:"column:id_empresa"`
+		IDSede      int64  `gorm:"column:id_sede"`
+		JsonModules string `gorm:"column:json_modules"`
+	}
+
+	var row rawRow
+
+	err := db.
+		Table("seguridad.cfg_sedes_roles").
+		Select("id, id_rol, id_empresa, id_sede, json_modules").
+		Where("id_rol = ?", idRol).
+		Order("id DESC").
+		First(&row).Error
+
+	// Sin registro → devolvemos exists=false sin error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return &ConfigRolResponse{Exists: false}, nil
+		}
+		return nil, err
+	}
+
+	// Deserializar el JSON de módulos
+	var items []Item
+	if row.JsonModules != "" {
+		if jsonErr := json.Unmarshal([]byte(row.JsonModules), &items); jsonErr != nil {
+			logging.Error.Printf("error al deserializar json_modules: %v", jsonErr)
+			items = []Item{}
+		}
+	}
+
+	return &ConfigRolResponse{
+		ID:          row.ID,
+		IDRol:       row.IDRol,
+		IDEmpresa:   row.IDEmpresa,
+		IDSede:      row.IDSede,
+		JsonModules: items,
+		Exists:      true,
+	}, nil
+
+}
+
+func UpdateConfigRol(db *gorm.DB, id int64, req *UpdateConfigRolRequest) (int64, error) {
+
+	jsonBytes, err := json.Marshal(req.Json)
+	if err != nil {
+		return 0, fmt.Errorf("error al serializar json_modules: %w", err)
+	}
+
+	data := map[string]interface{}{
+		"json_modules": string(jsonBytes),
+		"updated_by":   req.UserID,
+		"updated_at":   time.Now(),
+	}
+
+	result := db.Table("seguridad.cfg_sedes_roles").
+		Where("id = ?", id).
+		Updates(data)
+
+	if result.Error != nil {
+		return 0, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return 0, sql.ErrNoRows
+	}
+
+	return id, nil
+}

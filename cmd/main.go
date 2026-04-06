@@ -88,7 +88,7 @@ func main() {
 		if isAllowedOrigin(origin) {
 			c.Set("Access-Control-Allow-Origin", origin)
 			c.Set("Access-Control-Allow-Credentials", "true")
-			c.Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+			c.Set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 			c.Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, Cookie, X-Requested-With, X-Tenant-ID")
 			c.Set("Access-Control-Expose-Headers", "Set-Cookie")
 			c.Set("Access-Control-Max-Age", "43200")

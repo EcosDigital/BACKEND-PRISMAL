@@ -140,5 +140,7 @@ CREATE TABLE IF NOT EXISTS seguridad.cfg_sedes_roles(
     id_rol INT NOT NULL REFERENCES seguridad.cfg_roles_usuario(id),
     json_modules JSONB NOT NULL,
     created_by INT NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
+    updated_by INT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP NULL
 );

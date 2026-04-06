@@ -3,6 +3,7 @@ package loader
 import (
 	"github.com/ecosistema/core/src/modules/RRHH"
 	core "github.com/ecosistema/core/src/modules/_core"
+	reports "github.com/ecosistema/core/src/modules/_reports"
 	"github.com/ecosistema/core/src/modules/inventario"
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,4 +23,7 @@ func SetupRoutes(app *fiber.App) {
 
 	//RRHH
 	RRHH.RegisterRRHHRoutes(v1)
+
+	//REPORTES
+	reports.GestionReportsRoutes(v1)
 }

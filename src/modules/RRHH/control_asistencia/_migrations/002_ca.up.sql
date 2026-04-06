@@ -106,8 +106,10 @@ COMMENT ON COLUMN control_asistencia.cfg_horarios_detalle.fecha_creacion       I
 
 CREATE TABLE IF NOT EXISTS control_asistencia.cfg_empleado_horario (
     id              SERIAL      PRIMARY KEY,
-    id_empleado     INTEGER     NOT NULL,
-    id_horario      INTEGER     NOT NULL,
+    id_empleado     INTEGER     NOT NULL REFERENCES configuración.cfg_terceros(id),
+    id_horario      INTEGER     NOT NULL REFERENCES control_asistencia.cfg_horarios_asistencia(id),
+    fecha_inicio    DATE        NOT NULL,
+    fecha_fin       DATE,
     activo          BOOLEAN     NOT NULL DEFAULT TRUE,
     observaciones   TEXT,
     registrado_por  INTEGER,
@@ -158,100 +160,43 @@ CREATE UNIQUE INDEX IF NOT EXISTS uix_cfg_empleado_horario_activo
     ON control_asistencia.cfg_empleado_horario (id_empleado)
     WHERE activo = TRUE;
 
-
 -- ============================================================
 -- DATOS INICIALES
 -- ============================================================
 
 -- ------------------------------------------------------------
--- Cabeceras de horarios
+-- Cabecera de horario único
 -- ------------------------------------------------------------
 
 INSERT INTO control_asistencia.cfg_horarios_asistencia
     (codigo, nombre, descripcion, minutos_tolerancia)
 VALUES
     (
-        'ADM',
-        'Horario Administrativo',
-        'Horario estándar para personal administrativo y de apoyo. Jornada completa en horario de oficina.',
+        '001',
+        'Horario General',
+        'Horario estándar con jornada partida: mañana y tarde. Configuración base para operación inicial.',
         10
-    ),
-    (
-        'MED_AM',
-        'Médico Turno Mañana',
-        'Turno de mañana para personal médico y de salud. Cubre la atención de la primera parte del día.',
-        5
-    ),
-    (
-        'MED_PM',
-        'Médico Turno Tarde',
-        'Turno de tarde para personal médico y de salud. Cubre la atención de la segunda parte del día.',
-        5
-    ),
-    (
-        'ENF_AM',
-        'Enfermería Turno Mañana',
-        'Turno de mañana para personal de enfermería. Cubre la atención y cuidado del paciente en horas tempranas.',
-        5
-    ),
-    (
-        'MED_JP',
-        'Médico Jornada Partida',
-        'Jornada partida para personal médico con bloque de mañana y bloque de tarde, separados por descanso al mediodía.',
-        5
     )
 ON CONFLICT (codigo) DO NOTHING;
 
 -- ------------------------------------------------------------
--- Bloques de detalle por horario
+-- Bloques de detalle (jornada partida)
 -- ------------------------------------------------------------
 
--- ADM: jornada continua 08:00–17:00
-INSERT INTO control_asistencia.cfg_horarios_detalle
-    (id_horario, hora_entrada, hora_salida, orden)
-SELECT h.id, '08:00', '17:00', 1
-FROM control_asistencia.cfg_horarios_asistencia h
-WHERE h.codigo = 'ADM'
-ON CONFLICT (id_horario, orden) DO NOTHING;
-
--- MED_AM: jornada continua 07:00–13:00
-INSERT INTO control_asistencia.cfg_horarios_detalle
-    (id_horario, hora_entrada, hora_salida, orden)
-SELECT h.id, '07:00', '13:00', 1
-FROM control_asistencia.cfg_horarios_asistencia h
-WHERE h.codigo = 'MED_AM'
-ON CONFLICT (id_horario, orden) DO NOTHING;
-
--- MED_PM: jornada continua 13:00–19:00
-INSERT INTO control_asistencia.cfg_horarios_detalle
-    (id_horario, hora_entrada, hora_salida, orden)
-SELECT h.id, '13:00', '19:00', 1
-FROM control_asistencia.cfg_horarios_asistencia h
-WHERE h.codigo = 'MED_PM'
-ON CONFLICT (id_horario, orden) DO NOTHING;
-
--- ENF_AM: jornada continua 06:00–14:00
-INSERT INTO control_asistencia.cfg_horarios_detalle
-    (id_horario, hora_entrada, hora_salida, orden)
-SELECT h.id, '06:00', '14:00', 1
-FROM control_asistencia.cfg_horarios_asistencia h
-WHERE h.codigo = 'ENF_AM'
-ON CONFLICT (id_horario, orden) DO NOTHING;
-
--- MED_JP: jornada partida — bloque mañana 08:00–12:00
+-- Bloque mañana: 08:00–12:00
 INSERT INTO control_asistencia.cfg_horarios_detalle
     (id_horario, hora_entrada, hora_salida, orden)
 SELECT h.id, '08:00', '12:00', 1
 FROM control_asistencia.cfg_horarios_asistencia h
-WHERE h.codigo = 'MED_JP'
+WHERE h.codigo = '001'
 ON CONFLICT (id_horario, orden) DO NOTHING;
 
--- MED_JP: jornada partida — bloque tarde 14:00–17:00
+-- Bloque tarde: 14:00–18:00
 INSERT INTO control_asistencia.cfg_horarios_detalle
     (id_horario, hora_entrada, hora_salida, orden)
-SELECT h.id, '14:00', '17:00', 2
+SELECT h.id, '14:00', '18:00', 2
 FROM control_asistencia.cfg_horarios_asistencia h
-WHERE h.codigo = 'MED_JP'
+WHERE h.codigo = '001'
 ON CONFLICT (id_horario, orden) DO NOTHING;
 
 

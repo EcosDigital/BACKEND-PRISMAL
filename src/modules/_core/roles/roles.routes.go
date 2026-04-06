@@ -26,4 +26,9 @@ func Rutas_Roles(r fiber.Router) {
 	protected.Post("/config",
 		middlewares.VallidateBody(&ConfigRolRequest{}), CreateConfigRolController)
 
+	protected.Get("/config/:id_rol", GetConfigRolController)
+
+	protected.Put("/config/:id_rol",
+		middlewares.VallidateBody(&UpdateConfigRolRequest{}), UpdateConfigRolController)
+
 }
