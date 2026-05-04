@@ -135,3 +135,39 @@ func SearchArticulosController(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"data": results})
 }
+
+// ─── Carga masiva ─────────────────────────────────────────────────────────────
+
+// ImportArticulosController recibe el JSON con las filas del plano Excel,
+// resuelve las referencias por nombre, y hace upsert de cada artículo.
+//
+// POST /inventario/articulos/import
+// Body: { "filas": [ { "CODIGO": "...", "NOMBRE": "...", ... } ] }
+func ImportArticulosController(c *fiber.Ctx) error {
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	var req ImportArticulosRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
+	}
+
+	if len(req.Filas) == 0 {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "El plano no contiene filas"})
+	}
+
+	userID := int64(middlewares.GetUserID(c))
+	empresaID := int64(middlewares.GetEmpresaID(c))
+	sedeID := int64(middlewares.GetSedeID(c))
+
+	result, err := ImportArticulos(db, &req, userID, empresaID, sedeID)
+	if err != nil {
+		logging.Error.Printf("Error en carga masiva de artículos: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(result)
+}

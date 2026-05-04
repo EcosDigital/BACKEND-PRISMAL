@@ -639,3 +639,40 @@ func ListPresentacionArticulos(db *gorm.DB) ([]Presentacionrticulos, error) {
 
 	return results, nil
 }
+
+// === COSTOS ======== //
+func ListAreaCosto(db *gorm.DB) ([]ResultGeneral, error) {
+	var results []ResultGeneral
+
+	err := db.
+		Table("costos.cfg_area_costo").
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []ResultGeneral{}
+	}
+
+	return results, nil
+}
+
+func ListUnidadFuncional(db *gorm.DB) ([]ResultGeneral, error) {
+	var results []ResultGeneral
+
+	err := db.
+		Table("costos.cfg_unidad_funcional").
+		Order("id ASC").Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []ResultGeneral{}
+	}
+
+	return results, nil
+}

@@ -24,4 +24,6 @@ func Rutas_articulos(r fiber.Router) {
 
 	protected.Get("/search", SearchArticulosController)
 
+	protected.Post("/import", ImportArticulosController)
+
 }

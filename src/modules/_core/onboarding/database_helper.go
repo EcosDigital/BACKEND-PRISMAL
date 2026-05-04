@@ -74,6 +74,7 @@ func ExecuteTenantMigrations(dbName string) error {
 	excludedFiles := []string{
 		"007_init.up.sql",
 		"011_init.up.sql",
+		"015_init.up.sql",
 	}
 
 	// Ruta de las migraciones

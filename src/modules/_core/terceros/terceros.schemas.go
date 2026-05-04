@@ -36,7 +36,7 @@ type TerceroRequest struct {
 	IdGenero           int    `json:"id_genero" validate:"required,gt=0"`
 	Telefono           string `json:"telefono" validate:"required,numeric,min=7,max=15"`
 	Telefono_2         string `json:"telefono_2" validate:"omitempty,numeric,min=7,max=15"`
-	Email              string `json:"email" validate:"required,email,max=100"`
+	Email              string `json:"email" validate:"omitempty,email,max=100"`
 	PaginaWeb          string `json:"pagina_web" validate:"omitempty,url,max=300"`
 	Direccion          string `json:"direccion" validate:"required,min=5,max=150"`
 	IdPais             int    `json:"id_pais" valdate:"required,gt=0"`

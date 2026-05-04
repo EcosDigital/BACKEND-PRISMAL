@@ -178,3 +178,8 @@ type Presentacionrticulos struct {
 	ID     int    `json:"id"`
 	Nombre string `json:"nombre"`
 }
+
+type ResultGeneral struct {
+	ID     int    `json:"id"`
+	Nombre string `json:"nombre"`
+}

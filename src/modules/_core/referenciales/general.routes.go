@@ -31,16 +31,23 @@ func SetupRoutes(r fiber.Router) {
 	api.Get("/TipoSedes", middlewares.JWTProtected, GetTipoSedeController)
 	api.Get("/TipoRoles", middlewares.JWTProtected, GetTipoRolesController)
 
+	//COMPROBANTES
 	api.Get("/comprobantes/modulos", middlewares.JWTProtected, GetModulesComprobanteController)
 	api.Get("/comprobantes/operaciones/:id", middlewares.JWTProtected, GetTipoOperacionController)
 
+	//GESTIONES
 	api.Get("/gestiones/niveles", middlewares.JWTProtected, GetNivelesTicketController)
 	api.Get("/gestiones/estados", middlewares.JWTProtected, GetEstadoTicketController)
 	api.Get("/gestiones/colaboradores", middlewares.JWTProtected, GetColaboradoresController)
 
+	//INVENTARIO
 	api.Get("/inventario/tipo-bodega", middlewares.JWTProtected, GetTipoBodegaController)
 	api.Get("/inventario/unidades-medida", middlewares.JWTProtected, GetUnidadesMedidaController)
 	api.Get("/inventario/grupos-articulo", middlewares.JWTProtected, GetGrupoArticulosController)
 	api.Get("/articulos/presentaciones", middlewares.JWTProtected, GetPresentacionArticulosController)
+
+	//COSTOS
+	api.Get("/contabilidad/costos/area", middlewares.JWTProtected, GetAreaCostoController)
+	api.Get("/contabilidad/costos/unidad-funcional", middlewares.JWTProtected, GetUnidadFuncionalController)
 
 }

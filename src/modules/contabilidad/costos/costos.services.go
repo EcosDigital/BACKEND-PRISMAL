@@ -20,7 +20,7 @@ func RegisterCentroCosto(db *gorm.DB, req *CostosRequest) (int64, error) {
 	}
 
 	//insertar registro
-	regID, err := CreateCentroCosto(req)
+	regID, err := CreateCentroCosto(db, req)
 	if err != nil {
 		return 0, err
 	}
@@ -29,18 +29,18 @@ func RegisterCentroCosto(db *gorm.DB, req *CostosRequest) (int64, error) {
 
 }
 
-func FilterLastCentrosCosto() ([]CostosResponse, error) {
-	return ListCentrosCostosLast()
+func FilterLastCentrosCosto(db *gorm.DB) ([]CostosResponse, error) {
+	return ListCentrosCostosLast(db)
 }
 
-func FilterCentroCostoByID(id int64) ([]CostosResponse, error) {
-	return ListCentrosCostosByID(id)
+func FilterCentroCostoByID(db *gorm.DB, id int64) ([]CostosResponse, error) {
+	return ListCentrosCostosByID(db, id)
 }
 
-func EditCentroCosto(req *CostosUpdateRequest, id int64) (int64, error) {
+func EditCentroCosto(db *gorm.DB, req *CostosUpdateRequest, id int64) (int64, error) {
 
 	//verificar registro por ID
-	exists, err := ListCentrosCostosByID(id)
+	exists, err := ListCentrosCostosByID(db, id)
 
 	if err != nil {
 		return 0, err
@@ -52,7 +52,7 @@ func EditCentroCosto(req *CostosUpdateRequest, id int64) (int64, error) {
 	}
 
 	//actualizar registro
-	regID, err := UpdateCentroCosto(req, id)
+	regID, err := UpdateCentroCosto(db, req, id)
 	if err != nil {
 		return 0, err
 	}

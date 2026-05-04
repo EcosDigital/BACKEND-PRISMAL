@@ -672,7 +672,7 @@ CREATE TABLE IF NOT EXISTS configuracion.cfg_terceros(
     fecha_nacimiento DATE NULL,
     telefono VARCHAR(20) NOT NULL,
     telefono_2 VARCHAR(20),
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NULL,
     pagina_web VARCHAR(300),
     direccion VARCHAR(350) NOT NULL,
     id_pais INT NOT NULL,

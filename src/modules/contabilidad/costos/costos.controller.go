@@ -54,7 +54,15 @@ func CreateCentroCostoController(c *fiber.Ctx) error {
 
 func FindLastCentrosCostoController(c *fiber.Ctx) error {
 
-	results, err := FilterLastCentrosCosto()
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	results, err := FilterLastCentrosCosto(db)
 	if err != nil {
 		logging.Error.Printf("Hubo un error: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -70,7 +78,15 @@ func FindCentroCostoByIDController(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID invalido"})
 	}
 
-	results, err := FilterCentroCostoByID(id)
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	results, err := FilterCentroCostoByID(db, id)
 	if err != nil {
 		logging.Error.Printf("Hubo un error: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -84,6 +100,14 @@ func ChangeCentroCostoController(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID invalido"})
+	}
+
+	//obtiene base de datos
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	var req CostosUpdateRequest
@@ -100,7 +124,7 @@ func ChangeCentroCostoController(c *fiber.Ctx) error {
 	req.SedeID = int64(middlewares.GetSedeID(c))
 
 	//invocar service (logica de negocio)
-	uptID, err := EditCentroCosto(&req, id)
+	uptID, err := EditCentroCosto(db, &req, id)
 	if err != nil {
 
 		logging.Error.Printf("Hubo un error: %v", err)

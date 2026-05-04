@@ -122,3 +122,12 @@ func GetGrupoArticulos(db *gorm.DB) ([]GrupoArticulos, error) {
 func GetPresentacionArticulos(db *gorm.DB) ([]Presentacionrticulos, error) {
 	return ListPresentacionArticulos(db)
 }
+
+// ===== CENTROS DE COSTO ======= //
+func GetAreaCosto(db *gorm.DB) ([]ResultGeneral, error) {
+	return ListAreaCosto(db)
+}
+
+func GetUnidadFuncional(db *gorm.DB) ([]ResultGeneral, error) {
+	return ListUnidadFuncional(db)
+}

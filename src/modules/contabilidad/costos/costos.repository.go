@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/ecosistema/core/src/database"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +34,7 @@ func ListCentroCostoByCode(db *gorm.DB, codigo string) ([]CostosResponse, error)
 
 }
 
-func CreateCentroCosto(req *CostosRequest) (int64, error) {
+func CreateCentroCosto(db *gorm.DB, req *CostosRequest) (int64, error) {
 
 	data := map[string]interface{}{
 		"codigo":              req.Codigo,
@@ -49,7 +48,7 @@ func CreateCentroCosto(req *CostosRequest) (int64, error) {
 		"id_sede":             req.SedeID,
 	}
 
-	err := database.GormDB.
+	err := db.
 		Table("costos.cfg_centros_costo").
 		Create(&data)
 
@@ -66,11 +65,11 @@ func CreateCentroCosto(req *CostosRequest) (int64, error) {
 
 }
 
-func ListCentrosCostosLast() ([]CostosResponse, error) {
+func ListCentrosCostosLast(db *gorm.DB) ([]CostosResponse, error) {
 
 	var results []CostosResponse
 
-	err := database.GormDB.
+	err := db.
 		Table("costos.cfg_centros_costo cc").
 		Select(`
 			cc.id as id,
@@ -79,6 +78,7 @@ func ListCentrosCostosLast() ([]CostosResponse, error) {
 			cc.id_area as id_area,
 			ac.nombre as area,
 			cc.id_unidad_funcional as id_unidad,
+			uf.nombre as unidad,
 			cc.is_active`).
 		Joins("LEFT JOIN costos.cfg_area_costo ac ON ac.id = cc.id_area").
 		Joins("LEFT JOIN costos.cfg_unidad_funcional uf ON uf.id = cc.id_unidad_funcional").
@@ -97,11 +97,11 @@ func ListCentrosCostosLast() ([]CostosResponse, error) {
 
 }
 
-func ListCentrosCostosByID(id int64) ([]CostosResponse, error) {
+func ListCentrosCostosByID(db *gorm.DB, id int64) ([]CostosResponse, error) {
 
 	var results []CostosResponse
 
-	err := database.GormDB.
+	err := db.
 		Table("costos.cfg_centros_costo cc").
 		Select(`
 			cc.id as id,
@@ -129,21 +129,21 @@ func ListCentrosCostosByID(id int64) ([]CostosResponse, error) {
 
 }
 
-func UpdateCentroCosto(req *CostosUpdateRequest, id int64) (int64, error) {
+func UpdateCentroCosto(db *gorm.DB, req *CostosUpdateRequest, id int64) (int64, error) {
 
 	data := map[string]interface{}{
 		"nombre":              req.Nombre,
 		"id_area":             req.IDArea,
 		"id_unidad_funcional": req.IDUnidad,
 		"is_active":           req.IsActive,
-		"update_at":           time.Now(),
-		"update_by":           req.UserID,
+		"updated_at":          time.Now(),
+		"updated_by":          req.UserID,
 		"id_empresa":          req.EmpresaID,
 		"id_sede":             req.SedeID,
 	}
 
-	err := database.GormDB.
-		Table("costos.cfg_unidad_funcional").
+	err := db.
+		Table("costos.cfg_centros_costo").
 		Where("id = ?", id).
 		Updates(data)
 
