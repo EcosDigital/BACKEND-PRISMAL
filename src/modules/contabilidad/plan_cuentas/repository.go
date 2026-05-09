@@ -409,3 +409,40 @@ func BulkUpsertCuenta(
 
 	return "creada", nil
 }
+
+// ─── Exportación ──────────────────────────────────────────────────────────────
+
+// GetCuentasExport retorna todas las cuentas de la empresa con los campos
+// requeridos para el informe Excel. El campo created_at se formatea en la
+// query como 'DD/MM/YYYY HH24:MI' para facilitar la lectura directa en Excel.
+func GetCuentasExport(db *gorm.DB, empresaID int64) ([]CuentaExportRow, error) {
+	var results []CuentaExportRow
+
+	err := db.
+		Table("contabilidad.cfg_cuentas_contables c").
+		Select(`
+			c.codigo_cuenta,
+			c.nombre_cuenta,
+			COALESCE(p.codigo_cuenta || ' - ' || p.nombre_cuenta, '') AS cuenta_padre,
+			n.nombre  AS naturaleza,
+			COALESCE(t.nombre, '')  AS tipo_cuenta,
+			nv.nombre AS nivel_cuenta,
+			c.permite_movimientos,
+			c.requiere_tercero,
+			c.requiere_centro_costo,
+			c.is_active,
+			TO_CHAR(c.created_at, 'DD/MM/YYYY HH24:MI') AS created_at
+		`).
+		Joins(joinsCuenta).
+		Where("c.id_empresa = ?", empresaID).
+		Order("c.codigo_cuenta ASC").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+	if results == nil {
+		results = []CuentaExportRow{}
+	}
+	return results, nil
+}

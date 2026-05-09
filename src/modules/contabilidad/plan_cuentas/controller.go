@@ -165,3 +165,29 @@ func ImportCuentasController(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusOK).JSON(result)
 }
+
+// ExportCuentasController genera el JSON de filas listo para ser convertido
+// a Excel por el frontend con SheetJS.
+//
+// GET /contabilidad/cuentas/export
+// Respuesta: [ { "codigo_cuenta": "1105", "nombre_cuenta": "Caja General", ... } ]
+//
+// El endpoint no genera el binario .xlsx en el servidor; esa responsabilidad
+// recae en el frontend para evitar dependencias de librerías de hojas de cálculo
+// en Go y para que el usuario vea el progreso de descarga directamente.
+func ExportCuentasController(c *fiber.Ctx) error {
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	empresaID := int64(middlewares.GetEmpresaID(c))
+
+	rows, err := ExportCuentas(db, empresaID)
+	if err != nil {
+		logging.Error.Printf("Error exportando cuentas: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(rows)
+}

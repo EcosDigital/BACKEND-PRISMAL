@@ -232,3 +232,16 @@ func validatePlanoCuentaRow(fila *PlanoCuentaRow, filaNum int) error {
 	}
 	return nil
 }
+
+// ─── Exportación ──────────────────────────────────────────────────────────────
+
+// ExportCuentas obtiene todas las cuentas de la empresa listas para exportar.
+// La capa de servicio es un pass-through limpio hacia el repositorio; si en el
+// futuro se necesitara filtrar o enriquecer la lista, se haría aquí.
+func ExportCuentas(db *gorm.DB, empresaID int64) ([]CuentaExportRow, error) {
+	rows, err := GetCuentasExport(db, empresaID)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}

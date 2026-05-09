@@ -16,6 +16,10 @@ func Rutas_cuentas(r fiber.Router) {
 	// Carga masiva PUC
 	protected.Post("/import", ImportCuentasController)
 
+	// Exportación Excel — debe registrarse ANTES de /:id para que Fiber
+	// no interprete "export" como un parámetro dinámico de tipo ID.
+	protected.Get("/export", ExportCuentasController)
+
 	// CRUD
 	protected.Get("/", FindCuentasController)
 	protected.Post("/", middlewares.VallidateBody(&CuentaContableRequest{}), CreateCuentaController)

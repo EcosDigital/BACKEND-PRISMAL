@@ -160,6 +160,106 @@ func FindGestionesController(c *fiber.Ctx) error {
 	return c.JSON(results)
 }
 
+// ─── Asignación ───────────────────────────────────────────────────────────────
+// AssignCollaboratorsController  POST /ticket/:id/asignar
+func AssignCollaboratorsController(c *fiber.Ctx) error {
+
+	ticketID, err := parseID(c, "id")
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "ID de ticket inválido"})
+	}
+
+	var req AsignacionRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
+	}
+
+	req.UserID = int64(middlewares.GetUserID(c))
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := AssignCollaborators(db, ticketID, &req); err != nil {
+		logging.Error.Printf("AssignCollaboratorsController error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusCreated).JSON(fiber.Map{
+		"message": "Colaboradores asignados exitosamente",
+	})
+
+}
+
+// RemoveCollaboratorController  DELETE /ticket/:id/asignar/:colab_id
+func RemoveCollaboratorController(c *fiber.Ctx) error {
+
+	ticketID, err := parseID(c, "id")
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "ID de ticket inválido"})
+	}
+
+	colabID, err := parseID(c, "colab_id")
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "ID de colaborador inválido"})
+	}
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := RemoveCollaborator(db, ticketID, colabID); err != nil {
+		logging.Error.Printf("RemoveCollaboratorController error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "Colaborador removido exitosamente"})
+}
+
+// FindAsignadosController  GET /ticket/:id/asignados
+func FindAsignadosController(c *fiber.Ctx) error {
+
+	ticketID, err := parseID(c, "id")
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "ID de ticket inválido"})
+	}
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	results, err := FilterAsignados(db, ticketID)
+	if err != nil {
+		logging.Error.Printf("FindAsignadosController error: %v", err)
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(results)
+}
+
+// ─── Estadísticas globales ────────────────────────────────────────────────────
+
+// GetStatsController  GET /stats
+// Devuelve contadores globales por estado, independiente de cualquier filtro.
+func GetStatsController(c *fiber.Ctx) error {
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	stats, err := GetGlobalStats(db)
+	if err != nil {
+		logging.Error.Printf("GetStatsController error: %v", err)
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(stats)
+}
+
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
 func parseID(c *fiber.Ctx, param string) (int64, error) {

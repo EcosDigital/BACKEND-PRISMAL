@@ -22,4 +22,15 @@ func Rutas_Gestiones(r fiber.Router) {
 
 	protected.Get("/ticket/:id/gestiones", FindGestionesController)
 
+	// ── Asignación de colaboradores ───────────────────────────────────────────
+	protected.Post("/ticket/:id/asignar",
+		middlewares.VallidateBody(&AsignacionRequest{}), AssignCollaboratorsController)
+
+	protected.Delete("/ticket/:id/asignar/:colab_id", RemoveCollaboratorController)
+
+	protected.Get("/ticket/:id/asignados", FindAsignadosController)
+
+	// ── Estadísticas globales (independiente de filtros de lista) ─────────────
+	protected.Get("/stats", GetStatsController)
+
 }

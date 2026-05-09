@@ -146,3 +146,24 @@ type cuentasRefCache struct {
 	NivelesCuenta     map[string]int // "nivel 1" → id  AND  "1" → id
 	CodigosExistentes map[string]int // codigo_lower → id (saber si crear o actualizar)
 }
+
+// ─── Exportación Excel ────────────────────────────────────────────────────────
+//
+// CuentaExportRow es la fila que se serializa en la respuesta JSON del endpoint
+// GET /contabilidad/cuentas/export y luego el frontend la convierte a XLSX.
+// Los booleanos viajan como bool (true/false); la conversión a "Sí"/"No"
+// se realiza en el frontend con SheetJS para no acoplar lógica de presentación
+// al backend.
+type CuentaExportRow struct {
+	CodigoCuenta        string `json:"codigo_cuenta"         gorm:"column:codigo_cuenta"`
+	NombreCuenta        string `json:"nombre_cuenta"         gorm:"column:nombre_cuenta"`
+	CuentaPadre         string `json:"cuenta_padre"          gorm:"column:cuenta_padre"`
+	Naturaleza          string `json:"naturaleza"            gorm:"column:naturaleza"`
+	TipoCuenta          string `json:"tipo_cuenta"           gorm:"column:tipo_cuenta"`
+	NivelCuenta         string `json:"nivel_cuenta"          gorm:"column:nivel_cuenta"`
+	PermiteMovimientos  bool   `json:"permite_movimientos"   gorm:"column:permite_movimientos"`
+	RequiereTercero     bool   `json:"requiere_tercero"      gorm:"column:requiere_tercero"`
+	RequiereCentroCosto bool   `json:"requiere_centro_costo" gorm:"column:requiere_centro_costo"`
+	IsActive            bool   `json:"is_active"             gorm:"column:is_active"`
+	CreatedAt           string `json:"created_at"            gorm:"column:created_at"`
+}

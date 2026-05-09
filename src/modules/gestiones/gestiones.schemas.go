@@ -31,7 +31,8 @@ type TicketResponse struct {
 	CreadoEn         string `json:"created_at"`
 }
 
-// TicketFiltros recibe los query params del listado
+// TicketFiltros recibe los query params del listado.
+// FIX: se agrega Pagina y PerPagina para evitar devolver todos los registros sin límite.
 type TicketFiltros struct {
 	IDEstado      int    `query:"id_estado"`
 	IDNivel       int    `query:"id_nivel"`
@@ -39,6 +40,18 @@ type TicketFiltros struct {
 	IDColaborador int    `query:"id_colaborador"`
 	Numero        string `query:"numero"`
 	SoloAsignados bool   `query:"solo_asignados"`
+	// Paginación
+	Pagina    int `query:"pagina"`     // default 1
+	PerPagina int `query:"per_pagina"` // default 25, máx 100
+}
+
+// PaginatedTickets envuelve el resultado con metadatos de paginación.
+type PaginatedTickets struct {
+	Data      []TicketResponse `json:"data"`
+	Total     int64            `json:"total"`
+	Pagina    int              `json:"pagina"`
+	PerPagina int              `json:"per_pagina"`
+	Paginas   int              `json:"paginas"`
 }
 
 type GestionRequest struct {
@@ -55,7 +68,7 @@ type GestionResponse struct {
 	IDEstadoAnterior int    `json:"id_estado_anterior"`
 	EstadoAnterior   string `json:"estado_anterior"`
 	ColorAnterior    string `json:"color_anterior"`
-	// Estado al que se cambió (puede ser igual al anterior si solo es comentario)
+	// Estado al que se cambió
 	IDEstadoNuevo int    `json:"id_estado_nuevo"`
 	EstadoNuevo   string `json:"estado_nuevo"`
 	ColorNuevo    string `json:"color_nuevo"`
@@ -63,4 +76,41 @@ type GestionResponse struct {
 	IDAutor  int64  `json:"id_autor"`
 	Autor    string `json:"autor"`
 	CreadoEn string `json:"created_at"`
+}
+
+// ─── Asignación ───────────────────────────────────────────────────────────────
+
+// AsignacionRequest body para POST /ticket/:id/asignar
+type AsignacionRequest struct {
+	IDColaboradores []int64 `json:"id_colaboradores" validate:"required,min=1"`
+	Tarea           string  `json:"tarea"            validate:"omitempty,max=1000"`
+	UserID          int64   `json:"user_id"          validate:"omitempty"`
+}
+
+// AsignadoResponse representa un colaborador asignado a un ticket
+type AsignadoResponse struct {
+	ID            int64  `json:"id"`
+	IDTicket      int64  `json:"id_ticket"`
+	IDColaborador int64  `json:"id_colaborador"`
+	Nombre        string `json:"nombre"`
+	Tarea         string `json:"tarea"`
+	AsignadoEn    string `json:"created_at"`
+}
+
+// ─── Estadísticas globales ────────────────────────────────────────────────────
+
+// StatGlobalResponse es un contador por estado, independiente de filtros.
+type StatGlobalResponse struct {
+	ID       int    `json:"id"`
+	Nombre   string `json:"nombre"`
+	ColorHex string `json:"color_hex"`
+	Total    int    `json:"total"`
+}
+
+// StatsResponse agrupa los contadores globales y los indicadores operativos.
+type StatsResponse struct {
+	PorEstado  []StatGlobalResponse `json:"por_estado"`
+	Vencidos   int                  `json:"vencidos"`
+	SinAsignar int                  `json:"sin_asignar"`
+	CreadosHoy int                  `json:"creados_hoy"`
 }

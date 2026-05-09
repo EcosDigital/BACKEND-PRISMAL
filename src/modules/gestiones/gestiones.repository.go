@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // CreateTicket inserta un nuevo ticket en la base de datos
@@ -246,4 +247,158 @@ func ListGestiones(db *gorm.DB, ticketID int64) ([]GestionResponse, error) {
 	}
 
 	return results, nil
+}
+
+// ─── Asignación ───────────────────────────────────────────────────────────────
+
+// CreateAsignacion asigna colaboradores a un ticket de forma atómica.
+// Usa ON CONFLICT DO NOTHING para idempotencia (re-asignar no duplica).
+// Si el ticket estaba en estado "Propuesto" (1), lo pasa a "Asignado" (2).
+func CreateAsignacion(db *gorm.DB, ticketID int64, req *AsignacionRequest) error {
+
+	return db.Transaction(func(tx *gorm.DB) error {
+
+		for _, colabID := range req.IDColaboradores {
+			row := map[string]interface{}{
+				"id_ticket":      ticketID,
+				"id_colaborador": colabID,
+				"tarea":          req.Tarea,
+				"created_at":     time.Now(),
+				"created_by":     req.UserID,
+			}
+
+			if err := tx.
+				Table("gestiones.cfg_ticket_colaboradores").
+				Clauses(clause.OnConflict{DoNothing: true}).
+				Create(&row).Error; err != nil {
+				return err
+			}
+		}
+
+		// Cambiar estado a "Asignado" (id=2) solo si estaba en "Propuesto" (id=1)
+		if err := tx.
+			Table("gestiones.cfg_tickets_soporte").
+			Where("id = ? AND id_estado = 1", ticketID).
+			Update("id_estado", 2).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+// DeleteAsignacion elimina la asignación de un colaborador específico de un ticket.
+func DeleteAsignacion(db *gorm.DB, ticketID, colabID int64) error {
+	return db.
+		Table("gestiones.cfg_ticket_colaboradores").
+		Where("id_ticket = ? AND id_colaborador = ?", ticketID, colabID).
+		Delete(nil).Error
+}
+
+// ListAsignados devuelve los colaboradores asignados a un ticket.
+func ListAsignados(db *gorm.DB, ticketID int64) ([]AsignadoResponse, error) {
+
+	var results []AsignadoResponse
+
+	err := db.
+		Table("gestiones.cfg_ticket_colaboradores tc").
+		Select(`
+			tc.id,
+			tc.id_ticket,
+			tc.id_colaborador,
+			CASE
+				WHEN t.id_tipo_persona = 1 THEN
+					TRIM(CONCAT_WS(' ', t.primer_nombre, t.segundo_nombre, t.primer_apellido, t.segundo_apellido))
+				WHEN t.id_tipo_persona = 2 THEN
+					t.razon_social
+				ELSE ''
+			END AS nombre,
+			COALESCE(tc.tarea, '') AS tarea,
+			tc.created_at
+		`).
+		Joins("LEFT JOIN configuracion.cfg_terceros t ON t.id = tc.id_colaborador").
+		Where("tc.id_ticket = ?", ticketID).
+		Order("tc.created_at ASC").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []AsignadoResponse{}
+	}
+
+	return results, nil
+}
+
+// ─── Estadísticas globales ────────────────────────────────────────────────────
+
+// GetStats devuelve contadores globales independientes de cualquier filtro de la lista.
+// Incluye: conteo por estado, tickets vencidos, tickets sin asignar y creados hoy.
+func GetStats(db *gorm.DB) (*StatsResponse, error) {
+
+	// 1. Conteo por estado
+	var porEstado []StatGlobalResponse
+	err := db.Raw(`
+		SELECT
+			e.id,
+			e.nombre,
+			e.color_hex,
+			COALESCE(COUNT(t.id), 0)::INT AS total
+		FROM gestiones.cfg_estados_ticket e
+		LEFT JOIN gestiones.cfg_tickets_soporte t ON t.id_estado = e.id
+		WHERE e.is_active = TRUE
+		GROUP BY e.id, e.nombre, e.color_hex, e.orden
+		ORDER BY e.orden
+	`).Scan(&porEstado).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Tickets vencidos: fecha_entrega pasada y estado abierto (no Cerrado ni Devuelto)
+	var vencidos int
+	err = db.Raw(`
+		SELECT COUNT(*)
+		FROM gestiones.cfg_tickets_soporte
+		WHERE fecha_entrega IS NOT NULL
+		  AND fecha_entrega < NOW()
+		  AND id_estado NOT IN (6, 7)
+	`).Scan(&vencidos).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. Tickets sin asignar: no tienen registro en cfg_ticket_colaboradores
+	var sinAsignar int
+	err = db.Raw(`
+		SELECT COUNT(*)
+		FROM gestiones.cfg_tickets_soporte t
+		WHERE NOT EXISTS (
+			SELECT 1 FROM gestiones.cfg_ticket_colaboradores tc
+			WHERE tc.id_ticket = t.id
+		)
+		AND t.id_estado NOT IN (6, 7)
+	`).Scan(&sinAsignar).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 4. Creados hoy
+	var creadosHoy int
+	err = db.Raw(`
+		SELECT COUNT(*)
+		FROM gestiones.cfg_tickets_soporte
+		WHERE created_at::date = CURRENT_DATE
+	`).Scan(&creadosHoy).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &StatsResponse{
+		PorEstado:  porEstado,
+		Vencidos:   vencidos,
+		SinAsignar: sinAsignar,
+		CreadosHoy: creadosHoy,
+	}, nil
 }
