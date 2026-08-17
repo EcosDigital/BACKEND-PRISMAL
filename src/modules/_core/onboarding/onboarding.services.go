@@ -8,6 +8,7 @@ import (
 
 	"github.com/ecosistema/core/src/database"
 	empresa "github.com/ecosistema/core/src/modules/_core/gestion_empresa"
+	"github.com/ecosistema/core/src/modules/_core/roles"
 	"github.com/ecosistema/core/src/modules/_core/terceros"
 	"github.com/ecosistema/core/src/modules/_core/usuarios"
 	"github.com/gosimple/slug"
@@ -85,7 +86,15 @@ func RegisterTenantOnboarding(db *gorm.DB, req *TenantRequest) (int64, error) {
 		}
 	}
 
-	// 6.2 CAMBIAR LA CONEXION A BD DEL TENANT
+	// 6.2 PREPARAR PERMISOS COMPLETOS DEL ROL ADMINISTRADOR
+	// (se arma acá, antes de cambiar de conexión, porque el catálogo de
+	// módulos/funciones/subfunciones vive en la base de datos admin)
+	adminPermissions, err := BuildDefaultAdminPermissions(db, codigo)
+	if err != nil {
+		return 0, fmt.Errorf("error preparando permisos del administrador: %v", err)
+	}
+
+	// 6.3 CAMBIAR LA CONEXION A BD DEL TENANT
 	tenantDB, err := ConnectToTenantDB(dbName)
 	if err != nil {
 		return 0, fmt.Errorf("error conectando a BD tenant: %v", err)
@@ -191,6 +200,39 @@ func RegisterTenantOnboarding(db *gorm.DB, req *TenantRequest) (int64, error) {
 	userID, err := usuarios.CreateUser(database.GormDB, &UserRequest)
 	if err != nil {
 		return 0, fmt.Errorf("error creando usuario admin: %v", err)
+	}
+
+	// 10 CREAR SEDE PRINCIPAL Y ASIGNAR PERMISOS COMPLETOS AL ROL ADMINISTRADOR
+	// Así el administrador ya ve sus módulos desde el primer login, sin tener
+	// que configurar permisos manualmente.
+	responsable := strings.TrimSpace(req.Admin.PrimerNombre + " " + req.Admin.PrimerApellido)
+
+	SedeRequest := empresa.SedeRequest{
+		IdEmpresa:        int(empresaID),
+		Nombre:           "Sede Principal",
+		Codigo:           "PRIN001",
+		IdTipoSede:       1,
+		Direccion:        "",
+		IdPais:           1,
+		IdDepartamento:   req.Empresa.IdDepartamento,
+		Id_ciudad:        req.Empresa.IdCiudad,
+		IdZona:           1,
+		Telefono:         req.Empresa.Telefono,
+		Email:            req.Admin.Email,
+		ResponsableSede:  responsable,
+		CargoResponsable: "Administrador",
+		Estado:           BoolPtr(true),
+		UserID:           userID,
+		EmpresaID:        empresaID,
+	}
+
+	sedeID, err := empresa.CreateSede(database.GormDB, &SedeRequest)
+	if err != nil {
+		return 0, fmt.Errorf("error creando sede principal: %v", err)
+	}
+
+	if err := roles.AddSedeRol(database.GormDB, 1, int(sedeID), userID, adminPermissions); err != nil {
+		return 0, fmt.Errorf("error asignando permisos al rol administrador: %v", err)
 	}
 
 	return userID, err

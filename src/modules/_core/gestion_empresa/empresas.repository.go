@@ -62,6 +62,8 @@ func CreateEmpresa(db *gorm.DB, req *EmpresaRequest) (int64, error) {
 		"representante_legal":    req.RepresentanteLegal,
 		"codigo_licencia":        req.CodigoLicencia,
 		"is_active":              req.Estado,
+		"ia_endpoint":            req.IaEndpoint,
+		"ia_token":               req.IaToken,
 		"created_by":             req.UserID,
 		"created_at":             time.Now(),
 	}
@@ -147,7 +149,9 @@ func ListEmpresaByID(db *gorm.DB, id int64) ([]EmpresaResponseFull, error) {
 			numero_documento,
 			representante_legal,
 			codigo_licencia,
-			is_active as is_active`).
+			is_active as is_active,
+			ia_endpoint,
+			ia_token`).
 		Where("id = ?", id).
 		Scan(&results).Error
 
@@ -189,6 +193,8 @@ func UpdateEmpresa(db *gorm.DB, id int64, req *EmpresaUpdateRequest) (int64, err
 		"representante_legal":    req.RepresentanteLegal,
 		"codigo_licencia":        req.CodigoLicencia,
 		"is_active":              req.Estado,
+		"ia_endpoint":            req.IaEndpoint,
+		"ia_token":               req.IaToken,
 		"update_by":              req.UserID,
 		"update_at":              time.Now(),
 	}
@@ -306,10 +312,8 @@ func CreateSede(db *gorm.DB, req *SedeRequest) (int64, error) {
 		return 0, err.Error
 	}
 
-	id, ok := data["id"].(int64)
-	if !ok {
-		return 0, nil // el insert fue exitoso, pero no se requiere el ID
-	}
+	var id int64
+	db.Raw("SELECT lastval()").Scan(&id)
 
 	return id, nil
 }

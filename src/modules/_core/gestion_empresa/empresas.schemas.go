@@ -28,6 +28,8 @@ type EmpresaRequest struct {
 	RepresentanteLegal     string `json:"representante_legal" validate:"omitempty,min=2,max=200"`
 	CodigoLicencia         string `json:"codigo_licencia" validate:"omitempty,min=2,max=200"`
 	Estado                 *bool  `json:"is_active" validate:"required"`
+	IaEndpoint             string `json:"ia_endpoint" validate:"omitempty,url,max=300"`
+	IaToken                string `json:"ia_token" validate:"omitempty,max=1000"`
 	UserID                 int64  `json:"user_id" validate:"omitempty"`
 	EmpresaID              int64  `json:"empresa_id" validate:"omitempty"`
 	SedeID                 int64  `json:"sede_id" validate:"omitempty"`
@@ -72,6 +74,8 @@ type EmpresaResponseFull struct {
 	RepresentanteLegal     string `json:"representante_legal"`
 	CodigoLicencia         string `json:"codigo_licencia"`
 	IsActive               *bool  `json:"is_active"`
+	IaEndpoint             string `json:"ia_endpoint"`
+	IaToken                string `json:"ia_token"`
 }
 
 type EmpresaUpdateRequest struct {
@@ -102,6 +106,8 @@ type EmpresaUpdateRequest struct {
 	RepresentanteLegal     string `json:"representante_legal" validate:"omitempty,min=2,max=200"`
 	CodigoLicencia         string `json:"codigo_licencia" validate:"omitempty,min=2,max=200"`
 	Estado                 *bool  `json:"is_active" validate:"required"`
+	IaEndpoint             string `json:"ia_endpoint" validate:"omitempty,url,max=300"`
+	IaToken                string `json:"ia_token" validate:"omitempty,max=1000"`
 	UserID                 int64  `json:"user_id" validate:"omitempty"`
 	EmpresaID              int64  `json:"empresa_id" validate:"omitempty"`
 	SedeID                 int64  `json:"sede_id" validate:"omitempty"`

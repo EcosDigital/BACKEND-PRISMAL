@@ -6,6 +6,7 @@ import (
 	internal "github.com/ecosistema/core/src/modules/_functions"
 	reports "github.com/ecosistema/core/src/modules/_reports"
 	"github.com/ecosistema/core/src/modules/contabilidad"
+	docuemntacion "github.com/ecosistema/core/src/modules/gestion_organizacional"
 	"github.com/ecosistema/core/src/modules/inventario"
 	"github.com/ecosistema/core/src/modules/ventas"
 	"github.com/gofiber/fiber/v2"
@@ -29,6 +30,9 @@ func SetupRoutes(app *fiber.App) {
 
 	//RRHH
 	RRHH.RegisterRRHHRoutes(v1)
+
+	//DOCUMENTACION
+	docuemntacion.RegisterDocumentacionRoutes(v1)
 
 	//INTERNAL (Modulos de uso interno)
 	internal.RegisterFunctionsRoutes(v1)

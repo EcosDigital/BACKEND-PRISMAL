@@ -1,6 +1,7 @@
 package core
 
 import (
+	asistente "github.com/ecosistema/core/src/modules/_core/asistente_ia"
 	"github.com/ecosistema/core/src/modules/_core/comprobantes"
 	empresa "github.com/ecosistema/core/src/modules/_core/gestion_empresa"
 	modular "github.com/ecosistema/core/src/modules/_core/gestion_modular"
@@ -40,5 +41,7 @@ func RegisterCoreRoutes(r fiber.Router) {
 	gestiones.Rutas_Gestiones(core)
 
 	comprobantes.Rutas_comprobante(core) //gestion comprobantes
+
+	asistente.Rutas_Asistente(core) //asistente de IA (Copilot)
 
 }
