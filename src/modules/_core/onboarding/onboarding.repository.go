@@ -52,11 +52,12 @@ func CreateTerceroTenant(req *EmpresaPayload) (int64, error) {
 func CreateTenant(idTecero int64, slug string, dominio string) (int64, error) {
 
 	data := map[string]interface{}{
-		"id_tercero": idTecero,
-		"nombre":     slug,
-		"dominio":    dominio,
-		"is_active":  true,
-		"created_at": time.Now(),
+		"id_tercero":   idTecero,
+		"nombre":       slug,
+		"dominio":      dominio,
+		"is_active":    true,
+		"delivery_app": false,
+		"created_at":   time.Now(),
 	}
 
 	err := database.GormDB.

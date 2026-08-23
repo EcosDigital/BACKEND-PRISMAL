@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	Backend_port     string
-	Frontend_url     string
-	Allow_subdomains bool
+	Backend_port       string
+	Backend_public_url string
+	Frontend_url       string
+	Allow_subdomains   bool
 
 	Db_host string
 	Db_port string
@@ -45,10 +46,18 @@ func LoadConfig() {
 		log.Println("No se pudo cargar .env, usando variables de entorno del sistema.")
 	}
 
+	backendPort := getEnv("BACKEND_PORT", "3000")
+
 	Cfg = Config{
-		Backend_port:     getEnv("BACKEND_PORT", "3000"),
-		Frontend_url:     getEnv("FRONTEND_URL", "*"),
-		Allow_subdomains: getEnvBool("ALLOW_SUBDOMAINS", false),
+		Backend_port: backendPort,
+		// URL pública desde la que se sirven archivos estáticos (/uploads/...).
+		// En desarrollo, si no se define, cae a localhost + el puerto configurado.
+		// En producción DEBE apuntar al dominio/subdominio real que hace proxy
+		// hacia este backend (ej. https://prismar.org o https://api.prismar.org),
+		// sin "/" al final.
+		Backend_public_url: getEnv("BACKEND_PUBLIC_URL", "http://localhost"+backendPort),
+		Frontend_url:        getEnv("FRONTEND_URL", "*"),
+		Allow_subdomains:    getEnvBool("ALLOW_SUBDOMAINS", false),
 
 		Db_host: getEnv("DB_HOST", ""),
 		Db_port: getEnv("DB_PORT", ""),

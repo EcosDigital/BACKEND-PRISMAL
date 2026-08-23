@@ -3,6 +3,7 @@ package inventario
 import (
 	"github.com/ecosistema/core/src/modules/inventario/articulos"
 	bodega "github.com/ecosistema/core/src/modules/inventario/bodegas"
+	"github.com/ecosistema/core/src/modules/inventario/catalogo"
 	"github.com/ecosistema/core/src/modules/inventario/movimientos/bajas"
 	"github.com/ecosistema/core/src/modules/inventario/movimientos/entradas"
 	"github.com/ecosistema/core/src/modules/inventario/movimientos/kardex"
@@ -16,6 +17,7 @@ func RegisterInvetarioRoutes(r fiber.Router) {
 
 	bodega.Rutas_bodegas(inv)      //bodegas
 	articulos.Rutas_articulos(inv) //articulos
+	catalogo.Rutas_catalogo(inv)   //catalogo publico
 
 	entradas.Rutas_entradas(inv)   //entradas
 	traslados.Rutas_traslados(inv) //traslados

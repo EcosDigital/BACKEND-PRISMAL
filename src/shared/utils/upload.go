@@ -42,12 +42,11 @@ func EnsureUploadDir() error {
 	return nil
 }
 
-// validar imagen
-func ValidteImage(file *multipart.FileHeader) error {
-	// validar tamaño (maximo 10 mb)
-	if file.Size > MaxFileSize {
-		logging.Error.Printf("Archivo muy grande (máx 10MB)")
-		return fmt.Errorf("Archivo muy grande (máx 10MB)")
+// validar imagen contra un tamaño máximo específico
+func ValidateImageWithMaxSize(file *multipart.FileHeader, maxSize int64) error {
+	if file.Size > maxSize {
+		logging.Error.Printf("Archivo muy grande (máx %dMB)", maxSize/(1024*1024))
+		return fmt.Errorf("archivo muy grande (máx %dMB)", maxSize/(1024*1024))
 	}
 
 	//validar extension
@@ -59,6 +58,23 @@ func ValidteImage(file *multipart.FileHeader) error {
 
 	return nil
 
+}
+
+// validar imagen (tamaño máximo genérico de 10MB)
+func ValidteImage(file *multipart.FileHeader) error {
+	return ValidateImageWithMaxSize(file, MaxFileSize)
+}
+
+// ExtractFilenameFromUrl obtiene el nombre de archivo a partir de una URL pública
+// de /uploads/images o de un filename ya plano.
+func ExtractFilenameFromUrl(input string) string {
+	if strings.HasPrefix(input, "http://") || strings.HasPrefix(input, "https://") {
+		parts := strings.Split(input, "/")
+		if len(parts) > 0 {
+			return parts[len(parts)-1]
+		}
+	}
+	return input
 }
 
 // guardar imagen

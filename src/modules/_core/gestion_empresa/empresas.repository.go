@@ -283,25 +283,27 @@ func ListSedeByID(db *gorm.DB, id int64) ([]SedeResponseFull, error) {
 
 func CreateSede(db *gorm.DB, req *SedeRequest) (int64, error) {
 	data := map[string]interface{}{
-		"id_empresa":        req.IdEmpresa,
-		"nombre":            req.Nombre,
-		"codigo":            req.Codigo,
-		"id_tipo_sede":      req.IdTipoSede,
-		"direccion":         req.Direccion,
-		"id_pais":           req.IdPais,
-		"id_departamento":   req.IdDepartamento,
-		"id_ciudad":         req.Id_ciudad,
-		"id_zona":           req.IdZona,
-		"telefono":          req.Telefono,
-		"telefono_2":        req.Telefono_2,
-		"email":             req.Email,
-		"fax":               req.Fax,
-		"pagina_web":        req.PaginaWeb,
-		"responsable_sede":  req.ResponsableSede,
-		"cargo_responsable": req.CargoResponsable,
-		"estado":            req.Estado,
-		"created_by":        req.UserID,
-		"created_at":        time.Now(),
+		"id_empresa":           req.IdEmpresa,
+		"nombre":               req.Nombre,
+		"codigo":               req.Codigo,
+		"id_tipo_sede":         req.IdTipoSede,
+		"direccion":            req.Direccion,
+		"id_pais":              req.IdPais,
+		"id_departamento":      req.IdDepartamento,
+		"id_ciudad":            req.Id_ciudad,
+		"id_zona":              req.IdZona,
+		"telefono":             req.Telefono,
+		"telefono_2":           req.Telefono_2,
+		"email":                req.Email,
+		"fax":                  req.Fax,
+		"pagina_web":           req.PaginaWeb,
+		"responsable_sede":     req.ResponsableSede,
+		"cargo_responsable":    req.CargoResponsable,
+		"geolocalizacion_lat":  req.GeolocalizacionLat,
+		"geolocalizacion_lon":  req.GeolocalizacionLon,
+		"estado":               req.Estado,
+		"created_by":           req.UserID,
+		"created_at":           time.Now(),
 	}
 
 	err := db.
@@ -321,25 +323,27 @@ func CreateSede(db *gorm.DB, req *SedeRequest) (int64, error) {
 func UpdateSede(db *gorm.DB, id int64, req *SedeUpdateRequest) (int64, error) {
 
 	data := map[string]interface{}{
-		"id_empresa":        req.IdEmpresa,
-		"nombre":            req.Nombre,
-		"codigo":            req.Codigo,
-		"id_tipo_sede":      req.IdTipoSede,
-		"direccion":         req.Direccion,
-		"id_pais":           req.IdPais,
-		"id_departamento":   req.IdDepartamento,
-		"id_ciudad":         req.Id_ciudad,
-		"id_zona":           req.IdZona,
-		"telefono":          req.Telefono,
-		"telefono_2":        req.Telefono_2,
-		"email":             req.Email,
-		"fax":               req.Fax,
-		"pagina_web":        req.PaginaWeb,
-		"responsable_sede":  req.ResponsableSede,
-		"cargo_responsable": req.CargoResponsable,
-		"estado":            req.Estado,
-		"update_by":         req.UserID,
-		"update_at":         time.Now(),
+		"id_empresa":          req.IdEmpresa,
+		"nombre":              req.Nombre,
+		"codigo":              req.Codigo,
+		"id_tipo_sede":        req.IdTipoSede,
+		"direccion":           req.Direccion,
+		"id_pais":             req.IdPais,
+		"id_departamento":     req.IdDepartamento,
+		"id_ciudad":           req.Id_ciudad,
+		"id_zona":             req.IdZona,
+		"telefono":            req.Telefono,
+		"telefono_2":          req.Telefono_2,
+		"email":               req.Email,
+		"fax":                 req.Fax,
+		"pagina_web":          req.PaginaWeb,
+		"responsable_sede":    req.ResponsableSede,
+		"cargo_responsable":   req.CargoResponsable,
+		"geolocalizacion_lat": req.GeolocalizacionLat,
+		"geolocalizacion_lon": req.GeolocalizacionLon,
+		"estado":              req.Estado,
+		"update_by":           req.UserID,
+		"update_at":           time.Now(),
 	}
 
 	err := db.
@@ -357,4 +361,113 @@ func UpdateSede(db *gorm.DB, id int64, req *SedeUpdateRequest) (int64, error) {
 
 	return id, nil
 
+}
+
+// ─── Imagen de sede ──────────────────────────────────────────────────────────
+
+func GetSedeImagenURLByID(db *gorm.DB, id int64) (string, bool, error) {
+
+	var imagenURL sql.NullString
+
+	err := db.
+		Table("configuracion.cfg_sedes").
+		Select("imagen_url").
+		Where("id = ?", id).
+		Row().
+		Scan(&imagenURL)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", false, nil
+		}
+		return "", false, err
+	}
+
+	return imagenURL.String, true, nil
+}
+
+func UpdateSedeImagen(db *gorm.DB, id int64, imagenURL string) error {
+
+	tx := db.
+		Table("configuracion.cfg_sedes").
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"imagen_url": imagenURL,
+			"update_at":  time.Now(),
+		})
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
+// ─── Horario de atención por sede ───────────────────────────────────────────
+
+const sedeHorarioSelect = `
+	id,
+	dia_semana,
+	abierto,
+	TO_CHAR(hora_apertura, 'HH24:MI') AS hora_apertura,
+	TO_CHAR(hora_cierre, 'HH24:MI') AS hora_cierre`
+
+func ListSedeHorarios(db *gorm.DB, idSede int64) ([]SedeHorarioResponse, error) {
+
+	results := make([]SedeHorarioResponse, 0)
+
+	err := db.
+		Table("configuracion.cfg_sede_horarios").
+		Select(sedeHorarioSelect).
+		Where("id_sede = ?", idSede).
+		Order("dia_semana ASC").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func GetSedeHorarioByDia(db *gorm.DB, idSede int64, diaSemana int) (*SedeHorarioResponse, error) {
+
+	var result SedeHorarioResponse
+
+	err := db.
+		Table("configuracion.cfg_sede_horarios").
+		Select(sedeHorarioSelect).
+		Where("id_sede = ? AND dia_semana = ?", idSede, diaSemana).
+		Scan(&result).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+// UpsertSedeHorario crea o actualiza el horario de un día puntual de la sede.
+func UpsertSedeHorario(db *gorm.DB, idSede int64, diaSemana int, req *SedeHorarioRequest) (*SedeHorarioResponse, error) {
+
+	err := db.Exec(`
+		INSERT INTO configuracion.cfg_sede_horarios
+			(id_sede, dia_semana, abierto, hora_apertura, hora_cierre, created_by, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, NOW())
+		ON CONFLICT (id_sede, dia_semana) DO UPDATE SET
+			abierto = EXCLUDED.abierto,
+			hora_apertura = EXCLUDED.hora_apertura,
+			hora_cierre = EXCLUDED.hora_cierre,
+			updated_by = ?,
+			updated_at = NOW()
+	`, idSede, diaSemana, req.Abierto, req.HoraApertura, req.HoraCierre, req.UserID, req.UserID).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return GetSedeHorarioByDia(db, idSede, diaSemana)
 }

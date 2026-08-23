@@ -16,14 +16,18 @@ func Rutas_articulos(r fiber.Router) {
 	protected.Get("/",
 		FindArticulosController)
 
-	protected.Get("/articulos/:id",
-		FindArticuloByIDController)
-
-	protected.Put("/articulos/:id",
-		middlewares.VallidateBody(&ArticuloUpdateRequest{}), ChangeArticuloController)
-
+	// Rutas estáticas antes de "/:id" — Fiber matchea por orden de registro,
+	// no prioriza rutas estáticas automáticamente sobre parámetros.
 	protected.Get("/search", SearchArticulosController)
 
 	protected.Post("/import", ImportArticulosController)
+
+	protected.Get("/:id",
+		FindArticuloByIDController)
+
+	protected.Put("/:id",
+		middlewares.VallidateBody(&ArticuloUpdateRequest{}), ChangeArticuloController)
+
+	protected.Post("/:id/imagen", SetArticuloImagenController)
 
 }

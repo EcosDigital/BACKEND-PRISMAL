@@ -52,6 +52,19 @@ type ArticuloResponseFull struct {
 	IDFormaFarmaceutica *int    `json:"id_forma_farmaceutica" gorm:"column:id_forma_farmaceutica"`
 	IDPresentacion      *int    `json:"id_presentacion"       gorm:"column:id_presentacion"`
 	IsActive            *bool   `json:"is_active"             gorm:"column:is_active"`
+	ImagenURL           string  `json:"imagen_url"            gorm:"column:imagen_url"`
+}
+
+// ─── Imagen de producto ────────────────────────────────────────────────────
+
+// MaxImagenArticuloSize límite de peso para la imagen de un artículo (5MB).
+// Deliberadamente menor al límite genérico de /uploads/images (10MB): son
+// fotos de producto tomadas desde el celular, no logos ni documentos.
+const MaxImagenArticuloSize = 5 * 1024 * 1024
+
+type ArticuloImagenResponse struct {
+	ID        int64  `json:"id"`
+	ImagenURL string `json:"imagen_url"`
 }
 
 type RefUnidadMedida struct {

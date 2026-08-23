@@ -265,8 +265,10 @@ func ChangeSedeController(c *fiber.Ctx) error {
 		})
 	}
 
+	tenantSlug := middlewares.GetTenantSlug(c)
+
 	//services (logica negocio)
-	uptID, err := EditSede(db, id, &req)
+	uptID, syncWarning, err := EditSede(db, tenantSlug, id, &req)
 	if err != nil {
 
 		logging.Error.Printf("Hubo un error: %v", err)
@@ -278,8 +280,120 @@ func ChangeSedeController(c *fiber.Ctx) error {
 
 	//response
 	return c.Status(http.StatusCreated).JSON(fiber.Map{
-		"message": "Registro actualizado...",
-		"id":      uptID,
+		"message":      "Registro actualizado...",
+		"id":           uptID,
+		"sync_warning": syncWarning,
 	})
 
+}
+
+// ─── Imagen de sede ──────────────────────────────────────────────────────────
+
+// SetSedeImagenController sube/reemplaza la imagen de una sede.
+//
+// POST /core/sedes/:id/imagen (multipart, campo "image")
+func SetSedeImagenController(c *fiber.Ctx) error {
+
+	idParam := c.Params("id")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+	}
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "No se encontró la imagen en el campo 'image'"})
+	}
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	tenantSlug := middlewares.GetTenantSlug(c)
+
+	imagenURL, syncWarning, err := SetSedeImagen(db, tenantSlug, id, file)
+	if err != nil {
+		logging.Error.Printf("Error subiendo imagen de sede: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message":      "Imagen actualizada exitosamente",
+		"id":           id,
+		"imagen_url":   imagenURL,
+		"sync_warning": syncWarning,
+	})
+}
+
+// ─── Horario de atención por sede ───────────────────────────────────────────
+
+// ListSedeHorariosController lista los días configurados de una sede.
+//
+// GET /core/sedes/:id/horarios
+func ListSedeHorariosController(c *fiber.Ctx) error {
+
+	idParam := c.Params("id")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+	}
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	results, err := FilterSedeHorarios(db, id)
+	if err != nil {
+		logging.Error.Printf("Hubo un error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(results)
+}
+
+// SaveSedeHorarioController crea o actualiza el horario de un día puntual.
+//
+// PUT /core/sedes/:id/horarios/:dia (dia = 0..6, 0=domingo)
+func SaveSedeHorarioController(c *fiber.Ctx) error {
+
+	idParam := c.Params("id")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID de sede inválido"})
+	}
+
+	diaParam := c.Params("dia")
+	dia, err := strconv.Atoi(diaParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Día inválido"})
+	}
+
+	var req SedeHorarioRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
+	}
+
+	req.UserID = int64(middlewares.GetUserID(c))
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	tenantSlug := middlewares.GetTenantSlug(c)
+
+	result, syncWarning, err := SaveSedeHorario(db, tenantSlug, id, dia, &req)
+	if err != nil {
+		logging.Error.Printf("Hubo un error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message":      "Horario actualizado exitosamente",
+		"data":         result,
+		"sync_warning": syncWarning,
+	})
 }

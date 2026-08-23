@@ -2,7 +2,6 @@ package uploads
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/ecosistema/core/src/core"
 	"github.com/ecosistema/core/src/shared/logging"
@@ -44,8 +43,7 @@ func UploadImageController(c *fiber.Ctx) error {
 		})
 	}
 
-	baseURL := "http://localhost" + core.Cfg.Backend_port
-	url := fmt.Sprintf("%s/uploads/%s", baseURL, filename)
+	url := fmt.Sprintf("%s/uploads/%s", core.Cfg.Backend_public_url, filename)
 
 	//guardar datos en bd
 
@@ -68,7 +66,7 @@ func DeleteImageController(c *fiber.Ctx) error {
 	logging.Info.Printf("🗑️  Argumento recibido: %v", filenameOrUrl)
 
 	// Extraer el filename si viene una URL completa
-	filename := extractFilenameFromUrl(filenameOrUrl)
+	filename := utils.ExtractFilenameFromUrl(filenameOrUrl)
 
 	logging.Info.Printf("📂 Filename extraído: %v", filename)
 
@@ -86,18 +84,4 @@ func DeleteImageController(c *fiber.Ctx) error {
 		"filename": filename,
 	})
 
-}
-
-func extractFilenameFromUrl(input string) string {
-	// Si contiene "http://" o "https://", es una URL
-	if strings.HasPrefix(input, "http://") || strings.HasPrefix(input, "https://") {
-		// Dividir por "/" y tomar el último segmento
-		parts := strings.Split(input, "/")
-		if len(parts) > 0 {
-			return parts[len(parts)-1]
-		}
-	}
-
-	// Si no es URL, asumir que ya es el filename
-	return input
 }

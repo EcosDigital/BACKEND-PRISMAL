@@ -95,7 +95,8 @@ func ListArticuloByID(db *gorm.DB, id int64) (*ArticuloResponseFull, error) {
 			a.factor_unidad_base,
 			a.id_forma_farmaceutica,
 			a.id_presentacion,
-			a.is_active`).
+			a.is_active,
+			a.imagen_url`).
 		Joins("INNER JOIN inventario.cfg_grupo_articulos g ON g.id = a.id_tipo_articulo").
 		Joins("INNER JOIN inventario.ref_unidad_medidas u ON u.id = a.id_unidad_medida").
 		Where("a.id = ?", id).
@@ -142,6 +143,52 @@ func UpdateArticulo(db *gorm.DB, req *ArticuloUpdateRequest, id int64) (int64, e
 	}
 
 	return id, nil
+}
+
+// ─── Imagen de producto ─────────────────────────────────────────────────────
+
+// GetImagenURLByID retorna la imagen_url actual del artículo y si el artículo existe.
+func GetImagenURLByID(db *gorm.DB, id int64) (string, bool, error) {
+
+	var imagenURL sql.NullString
+
+	err := db.
+		Table("inventario.cfg_articulos").
+		Select("imagen_url").
+		Where("id = ?", id).
+		Row().
+		Scan(&imagenURL)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", false, nil
+		}
+		return "", false, err
+	}
+
+	return imagenURL.String, true, nil
+}
+
+// UpdateImagenArticulo guarda la nueva imagen_url del artículo.
+func UpdateImagenArticulo(db *gorm.DB, id int64, imagenURL string, userID int64) error {
+
+	tx := db.
+		Table("inventario.cfg_articulos").
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"imagen_url": imagenURL,
+			"updated_at": time.Now(),
+			"updated_by": userID,
+		})
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func SearchArticulos(db *gorm.DB, nombreCodigo string, empresaID int64) ([]ArticuloResponse, error) {

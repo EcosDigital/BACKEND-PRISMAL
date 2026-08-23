@@ -136,6 +136,44 @@ func SearchArticulosController(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"data": results})
 }
 
+// ─── Imagen de producto ─────────────────────────────────────────────────────
+
+// SetArticuloImagenController sube/reemplaza la imagen de un artículo.
+//
+// POST /inventario/articulos/:id/imagen (multipart, campo "image")
+func SetArticuloImagenController(c *fiber.Ctx) error {
+
+	idParam := c.Params("id")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+	}
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "No se encontró la imagen en el campo 'image'"})
+	}
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	userID := int64(middlewares.GetUserID(c))
+
+	imagenURL, err := SetArticuloImagen(db, id, file, userID)
+	if err != nil {
+		logging.Error.Printf("Error subiendo imagen de artículo: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message":    "Imagen actualizada exitosamente",
+		"id":         id,
+		"imagen_url": imagenURL,
+	})
+}
+
 // ─── Carga masiva ─────────────────────────────────────────────────────────────
 
 // ImportArticulosController recibe el JSON con las filas del plano Excel,

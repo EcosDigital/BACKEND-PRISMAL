@@ -22,4 +22,11 @@ func Rutas_Sede(r fiber.Router) {
 	protected.Put("/:id",
 		middlewares.VallidateBody(&SedeUpdateRequest{}), ChangeSedeController)
 
+	protected.Post("/:id/imagen", SetSedeImagenController)
+
+	protected.Get("/:id/horarios", ListSedeHorariosController)
+
+	protected.Put("/:id/horarios/:dia",
+		middlewares.VallidateBody(&SedeHorarioRequest{}), SaveSedeHorarioController)
+
 }

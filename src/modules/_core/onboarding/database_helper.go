@@ -75,6 +75,9 @@ func ExecuteTenantMigrations(dbName string) error {
 		"007_init.up.sql",
 		"011_init.up.sql",
 		"015_init.up.sql",
+		"017_init.up.sql",
+		"018_init.up.sql",
+		"020_init.up.sql",
 	}
 
 	// Ruta de las migraciones

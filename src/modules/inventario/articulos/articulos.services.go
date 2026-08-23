@@ -3,8 +3,12 @@ package articulos
 import (
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"strings"
 
+	"github.com/ecosistema/core/src/core"
+	"github.com/ecosistema/core/src/shared/logging"
+	"github.com/ecosistema/core/src/shared/utils"
 	"gorm.io/gorm"
 )
 
@@ -35,6 +39,49 @@ func EditArticulo(db *gorm.DB, id int64, req *ArticuloUpdateRequest) (int64, err
 
 func FilterSearchArticulos(db *gorm.DB, nombreCodigo string, empresaID int64) ([]ArticuloResponse, error) {
 	return SearchArticulos(db, nombreCodigo, empresaID)
+}
+
+// ─── Imagen de producto ─────────────────────────────────────────────────────
+
+// SetArticuloImagen valida, guarda y asocia una nueva imagen al artículo.
+// Si el artículo ya tenía una imagen, el archivo físico anterior se borra
+// DESPUÉS de que la BD quede actualizada con la nueva URL (para no perder
+// el archivo viejo si la actualización en BD llega a fallar).
+func SetArticuloImagen(db *gorm.DB, id int64, file *multipart.FileHeader, userID int64) (string, error) {
+
+	oldImagenURL, exists, err := GetImagenURLByID(db, id)
+	if err != nil {
+		return "", err
+	}
+	if !exists {
+		return "", errors.New("no se encontró artículo con este ID")
+	}
+
+	if err := utils.ValidateImageWithMaxSize(file, MaxImagenArticuloSize); err != nil {
+		return "", err
+	}
+
+	filename, err := utils.SaveImage(file)
+	if err != nil {
+		return "", fmt.Errorf("error guardando la imagen: %w", err)
+	}
+
+	newImagenURL := fmt.Sprintf("%s/uploads/%s", core.Cfg.Backend_public_url, filename)
+
+	if err := UpdateImagenArticulo(db, id, newImagenURL, userID); err != nil {
+		// La BD no quedó actualizada: no dejamos el archivo nuevo huérfano.
+		_ = utils.DeleteImage(filename)
+		return "", fmt.Errorf("error actualizando el artículo: %w", err)
+	}
+
+	if oldImagenURL != "" {
+		oldFilename := utils.ExtractFilenameFromUrl(oldImagenURL)
+		if err := utils.DeleteImage(oldFilename); err != nil {
+			logging.Error.Printf("no se pudo borrar la imagen anterior del artículo %d (%s): %v", id, oldFilename, err)
+		}
+	}
+
+	return newImagenURL, nil
 }
 
 // ─── Carga masiva ─────────────────────────────────────────────────────────────

@@ -114,49 +114,53 @@ type EmpresaUpdateRequest struct {
 }
 
 type SedeRequest struct {
-	IdEmpresa        int    `json:"id_empresa" validate:"required,gt=0"`
-	Nombre           string `json:"nombre" validate:"required,min=2,max=150"`
-	Codigo           string `json:"codigo"`
-	IdTipoSede       int    `json:"id_tipo_sede" validate:"required,gt=0"`
-	Direccion        string `json:"direccion" validate:"required,min=5,max=150"`
-	IdPais           int    `json:"id_pais" valdate:"required,gt=0"`
-	IdDepartamento   int    `json:"id_departamento" validate:"required,gt=0"`
-	Id_ciudad        int    `json:"id_ciudad" validate:"required,gt=0"`
-	IdZona           int    `json:"id_zona" valdate:"required,gt=0"`
-	Telefono         string `json:"telefono" validate:"required,numeric,min=7,max=15"`
-	Telefono_2       string `json:"telefono_2" validate:"omitempty,numeric,min=7,max=15"`
-	Email            string `json:"email" validate:"required,email,max=100"`
-	Fax              string `json:"fax" validate:"omitempty,max=70"`
-	PaginaWeb        string `json:"pagina_web" validate:"omitempty,url,max=300"`
-	ResponsableSede  string `json:"responsable" validate:"required,min=2,max=150"`
-	CargoResponsable string `json:"cargo_responsable" validate:"required,min=3,max=150"`
-	Estado           *bool  `json:"estado" validate:"required"`
-	UserID           int64  `json:"user_id" validate:"omitempty"`
-	EmpresaID        int64  `json:"empresa_id" validate:"omitempty"`
-	SedeID           int64  `json:"sede_id" validate:"omitempty"`
+	IdEmpresa          int      `json:"id_empresa" validate:"required,gt=0"`
+	Nombre             string   `json:"nombre" validate:"required,min=2,max=150"`
+	Codigo             string   `json:"codigo"`
+	IdTipoSede         int      `json:"id_tipo_sede" validate:"required,gt=0"`
+	Direccion          string   `json:"direccion" validate:"required,min=5,max=150"`
+	IdPais             int      `json:"id_pais" valdate:"required,gt=0"`
+	IdDepartamento     int      `json:"id_departamento" validate:"required,gt=0"`
+	Id_ciudad          int      `json:"id_ciudad" validate:"required,gt=0"`
+	IdZona             int      `json:"id_zona" valdate:"required,gt=0"`
+	Telefono           string   `json:"telefono" validate:"required,numeric,min=7,max=15"`
+	Telefono_2         string   `json:"telefono_2" validate:"omitempty,numeric,min=7,max=15"`
+	Email              string   `json:"email" validate:"required,email,max=100"`
+	Fax                string   `json:"fax" validate:"omitempty,max=70"`
+	PaginaWeb          string   `json:"pagina_web" validate:"omitempty,url,max=300"`
+	ResponsableSede    string   `json:"responsable" validate:"required,min=2,max=150"`
+	CargoResponsable   string   `json:"cargo_responsable" validate:"required,min=3,max=150"`
+	GeolocalizacionLat *float64 `json:"geolocalizacion_lat" validate:"omitempty"`
+	GeolocalizacionLon *float64 `json:"geolocalizacion_lon" validate:"omitempty"`
+	Estado             *bool    `json:"estado" validate:"required"`
+	UserID             int64    `json:"user_id" validate:"omitempty"`
+	EmpresaID          int64    `json:"empresa_id" validate:"omitempty"`
+	SedeID             int64    `json:"sede_id" validate:"omitempty"`
 }
 
 type SedeUpdateRequest struct {
-	IdEmpresa        int    `json:"id_empresa" validate:"required,gt=0"`
-	Nombre           string `json:"nombre" validate:"required,min=2,max=150"`
-	Codigo           string `json:"codigo"`
-	IdTipoSede       int    `json:"id_tipo_sede" validate:"required,gt=0"`
-	Direccion        string `json:"direccion" validate:"required,min=5,max=150"`
-	IdPais           int    `json:"id_pais" valdate:"required,gt=0"`
-	IdDepartamento   int    `json:"id_departamento" validate:"required,gt=0"`
-	Id_ciudad        int    `json:"id_ciudad" validate:"required,gt=0"`
-	IdZona           int    `json:"id_zona" valdate:"required,gt=0"`
-	Telefono         string `json:"telefono" validate:"required,numeric,min=7,max=15"`
-	Telefono_2       string `json:"telefono_2" validate:"omitempty,numeric,min=7,max=15"`
-	Email            string `json:"email" validate:"required,email,max=100"`
-	Fax              string `json:"fax" validate:"omitempty,max=70"`
-	PaginaWeb        string `json:"pagina_web" validate:"omitempty,url,max=300"`
-	ResponsableSede  string `json:"responsable" validate:"required,min=2,max=150"`
-	CargoResponsable string `json:"cargo_responsable" validate:"required,min=3,max=150"`
-	Estado           *bool  `json:"estado" validate:"required"`
-	UserID           int64  `json:"user_id" validate:"omitempty"`
-	EmpresaID        int64  `json:"empresa_id" validate:"omitempty"`
-	SedeID           int64  `json:"sede_id" validate:"omitempty"`
+	IdEmpresa          int      `json:"id_empresa" validate:"required,gt=0"`
+	Nombre             string   `json:"nombre" validate:"required,min=2,max=150"`
+	Codigo             string   `json:"codigo"`
+	IdTipoSede         int      `json:"id_tipo_sede" validate:"required,gt=0"`
+	Direccion          string   `json:"direccion" validate:"required,min=5,max=150"`
+	IdPais             int      `json:"id_pais" valdate:"required,gt=0"`
+	IdDepartamento     int      `json:"id_departamento" validate:"required,gt=0"`
+	Id_ciudad          int      `json:"id_ciudad" validate:"required,gt=0"`
+	IdZona             int      `json:"id_zona" valdate:"required,gt=0"`
+	Telefono           string   `json:"telefono" validate:"required,numeric,min=7,max=15"`
+	Telefono_2         string   `json:"telefono_2" validate:"omitempty,numeric,min=7,max=15"`
+	Email              string   `json:"email" validate:"required,email,max=100"`
+	Fax                string   `json:"fax" validate:"omitempty,max=70"`
+	PaginaWeb          string   `json:"pagina_web" validate:"omitempty,url,max=300"`
+	ResponsableSede    string   `json:"responsable" validate:"required,min=2,max=150"`
+	CargoResponsable   string   `json:"cargo_responsable" validate:"required,min=3,max=150"`
+	GeolocalizacionLat *float64 `json:"geolocalizacion_lat" validate:"omitempty"`
+	GeolocalizacionLon *float64 `json:"geolocalizacion_lon" validate:"omitempty"`
+	Estado             *bool    `json:"estado" validate:"required"`
+	UserID             int64    `json:"user_id" validate:"omitempty"`
+	EmpresaID          int64    `json:"empresa_id" validate:"omitempty"`
+	SedeID             int64    `json:"sede_id" validate:"omitempty"`
 }
 
 type SedeResponse struct {
@@ -169,22 +173,42 @@ type SedeResponse struct {
 }
 
 type SedeResponseFull struct {
-	ID               int    `json:"id"`
-	IdEmpresa        int    `json:"id_empresa" `
-	Nombre           string `json:"nombre"`
-	Codigo           string `json:"codigo"`
-	IdTipoSede       int    `json:"id_tipo_sede"`
-	Direccion        string `json:"direccion" `
-	IdPais           int    `json:"id_pais" `
-	IdDepartamento   int    `json:"id_departamento" `
-	Id_ciudad        int    `json:"id_ciudad" `
-	IdZona           int    `json:"id_zona" `
-	Telefono         string `json:"telefono" `
-	Telefono_2       string `json:"telefono_2" `
-	Email            string `json:"email"`
-	Fax              string `json:"fax"`
-	PaginaWeb        string `json:"pagina_web"`
-	ResponsableSede  string `json:"responsable"`
-	CargoResponsable string `json:"cargo_responsable"`
-	Estado           *bool  `json:"estado"`
+	ID                 int      `json:"id"`
+	IdEmpresa          int      `json:"id_empresa" `
+	Nombre             string   `json:"nombre"`
+	Codigo             string   `json:"codigo"`
+	IdTipoSede         int      `json:"id_tipo_sede"`
+	Direccion          string   `json:"direccion" `
+	IdPais             int      `json:"id_pais" `
+	IdDepartamento     int      `json:"id_departamento" `
+	Id_ciudad          int      `json:"id_ciudad" `
+	IdZona             int      `json:"id_zona" `
+	Telefono           string   `json:"telefono" `
+	Telefono_2         string   `json:"telefono_2" `
+	Email              string   `json:"email"`
+	Fax                string   `json:"fax"`
+	PaginaWeb          string   `json:"pagina_web"`
+	ResponsableSede    string   `json:"responsable"`
+	CargoResponsable   string   `json:"cargo_responsable"`
+	GeolocalizacionLat *float64 `json:"geolocalizacion_lat" gorm:"column:geolocalizacion_lat"`
+	GeolocalizacionLon *float64 `json:"geolocalizacion_lon" gorm:"column:geolocalizacion_lon"`
+	ImagenURL          string   `json:"imagen_url" gorm:"column:imagen_url"`
+	Estado             *bool    `json:"estado"`
+}
+
+// ─── Horario de atención por sede ───────────────────────────────────────────
+
+type SedeHorarioRequest struct {
+	Abierto      *bool   `json:"abierto" validate:"required"`
+	HoraApertura *string `json:"hora_apertura" validate:"omitempty,datetime=15:04"`
+	HoraCierre   *string `json:"hora_cierre" validate:"omitempty,datetime=15:04"`
+	UserID       int64   `json:"user_id" validate:"omitempty"`
+}
+
+type SedeHorarioResponse struct {
+	ID           int     `json:"id"`
+	DiaSemana    int     `json:"dia_semana"`
+	Abierto      bool    `json:"abierto"`
+	HoraApertura *string `json:"hora_apertura"`
+	HoraCierre   *string `json:"hora_cierre"`
 }

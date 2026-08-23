@@ -36,3 +36,14 @@ func GetRolID(c *fiber.Ctx) int {
 	}
 	return sedeID
 }
+
+// GetTenantSlug retorna el slug del tenant actual (ej. "core"), seteado por
+// TenancyMiddleware. Vacío en modo single-tenant — no es un error, ese modo
+// no tiene concepto de tenant.
+func GetTenantSlug(c *fiber.Ctx) string {
+	tenant, ok := c.Locals("tenant").(string)
+	if !ok {
+		return ""
+	}
+	return tenant
+}
