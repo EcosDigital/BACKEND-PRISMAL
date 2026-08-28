@@ -514,3 +514,41 @@ func CheckDomainAvailable(dominio string) (bool, error) {
 		Count(&count).Error
 	return count == 0, err
 }
+
+// FindLicenciaActivaByTenantSlug resuelve el tenant y su licencia más reciente
+// a partir del slug usado en el header X-Tenant-ID (el mismo valor con el que
+// se arma el nombre de la BD del tenant: "prismar_"+slug). El slug coincide
+// directamente con cfg_tenants.dominio, tal como se guarda en el onboarding
+// (CreateTenant recibe req.Empresa.Subdominio sin transformar).
+func FindLicenciaActivaByTenantSlug(tenantSlug string) (int64, int64, error) {
+
+	var tenant struct {
+		ID int64
+	}
+
+	err := database.GormDB.
+		Table("configuracion.cfg_tenants").
+		Select("id").
+		Where("LOWER(dominio) = ?", strings.ToLower(strings.TrimSpace(tenantSlug))).
+		First(&tenant).Error
+	if err != nil {
+		return 0, 0, fmt.Errorf("tenant no encontrado para '%s': %v", tenantSlug, err)
+	}
+
+	var licencia struct {
+		ID int64
+	}
+
+	err = database.GormDB.
+		Table("configuracion.cfg_licencias").
+		Select("id").
+		Where("id_tenant = ?", tenant.ID).
+		Order("created_at DESC").
+		Limit(1).
+		First(&licencia).Error
+	if err != nil {
+		return 0, 0, fmt.Errorf("licencia no encontrada para el tenant '%s': %v", tenantSlug, err)
+	}
+
+	return tenant.ID, licencia.ID, nil
+}

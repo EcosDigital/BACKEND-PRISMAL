@@ -6,6 +6,7 @@ import (
 	internal "github.com/ecosistema/core/src/modules/_functions"
 	reports "github.com/ecosistema/core/src/modules/_reports"
 	"github.com/ecosistema/core/src/modules/contabilidad"
+	"github.com/ecosistema/core/src/modules/espacio_comercial"
 	docuemntacion "github.com/ecosistema/core/src/modules/gestion_organizacional"
 	"github.com/ecosistema/core/src/modules/inventario"
 	"github.com/ecosistema/core/src/modules/ventas"
@@ -39,4 +40,7 @@ func SetupRoutes(app *fiber.App) {
 
 	//REPORTES
 	reports.GestionReportsRoutes(v1)
+
+	//ESPACIO COMERCIAL
+	espacio_comercial.RegisterEspacioComercialRoutes(v1)
 }

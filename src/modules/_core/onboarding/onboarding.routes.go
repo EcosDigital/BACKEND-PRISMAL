@@ -16,4 +16,12 @@ func Rutas_onBoarding(r fiber.Router) {
 	api.Get("/modules", FindModuloByProduccionController)
 	api.Get("/check-domain", CheckDomainController)
 
+	// Instalar módulos en un tenant YA EXISTENTE (post-onboarding)
+	modulos := r.Group("/modulos",
+		middlewares.JWTProtected,
+		middlewares.EnrichContext,
+	)
+	modulos.Get("/disponibles", FindModulosDisponiblesController)
+	modulos.Post("/:codigo/instalar", InstallModuloTenantController)
+
 }

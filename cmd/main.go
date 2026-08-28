@@ -31,7 +31,8 @@ func main() {
 
 	//servdidor con fiber
 	app := fiber.New(fiber.Config{
-		BodyLimit: 10 * 1024 * 1024, // 5MB
+		// 400MB — cubre el límite de 350MB de los videos publicitarios de Espacio Comercial
+		BodyLimit: 400 * 1024 * 1024,
 	})
 
 	// Middlewares globales

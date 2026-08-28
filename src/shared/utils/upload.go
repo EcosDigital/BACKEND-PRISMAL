@@ -119,3 +119,55 @@ func DeleteImage(filename string) error {
 	filepath := filepath.Join(UploadDir, filename)
 	return os.Remove(filepath)
 }
+
+// ValidateVideoWithMaxSize valida un video contra un tamaño máximo y un mapa
+// de extensiones permitidas (ext en minúsculas -> mime type).
+func ValidateVideoWithMaxSize(file *multipart.FileHeader, maxSize int64, allowedExt map[string]string) error {
+	if file.Size > maxSize {
+		return fmt.Errorf("archivo muy grande (máx %dMB)", maxSize/(1024*1024))
+	}
+
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	if _, ok := allowedExt[ext]; !ok {
+		return fmt.Errorf("formato de video no permitido: %s", ext)
+	}
+
+	return nil
+}
+
+// SaveVideo guarda un video subido dentro de UploadDir/subdir con un nombre
+// único, y retorna la ruta relativa (subdir/filename.ext) para almacenar en BD.
+func SaveVideo(file *multipart.FileHeader, subdir string) (string, error) {
+	ext := filepath.Ext(file.Filename)
+	filename := uuid.New().String() + ext
+
+	dir := filepath.Join(UploadDir, subdir)
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return "", err
+	}
+
+	dstPath := filepath.Join(dir, filename)
+
+	src, err := file.Open()
+	if err != nil {
+		return "", err
+	}
+	defer src.Close()
+
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return "", err
+	}
+	defer dst.Close()
+
+	if _, err = io.Copy(dst, src); err != nil {
+		return "", err
+	}
+
+	return filename, nil
+}
+
+// DeleteVideo elimina un video guardado con SaveVideo (mismo subdir usado al crearlo).
+func DeleteVideo(subdir, filename string) error {
+	return os.Remove(filepath.Join(UploadDir, subdir, filename))
+}
