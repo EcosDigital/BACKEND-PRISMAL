@@ -131,7 +131,10 @@ func leerHorarios(tenantDB *gorm.DB, idSede int64) ([]horarioDia, error) {
 
 // ─── Resolución del tenant en la base admin ──────────────────────────────────
 
-func resolverTenant(tenantSlug string) (idTenant int64, deliveryApp bool, err error) {
+// ResolverTenant resuelve el id y el flag delivery_app de un tenant en la
+// base admin a partir de su slug (dominio). Se usa desde cualquier módulo
+// que necesite pasar de tenantSlug -> id_tenant, no solo desde este paquete.
+func ResolverTenant(tenantSlug string) (idTenant int64, deliveryApp bool, err error) {
 
 	var row struct {
 		ID          int64
@@ -310,7 +313,7 @@ func SyncCatalogoPorSede(tenantDB *gorm.DB, tenantSlug string, idSede int64) err
 
 func sincronizarUnaVez(tenantDB *gorm.DB, tenantSlug string, idCatalogo int64) error {
 
-	idTenant, deliveryApp, err := resolverTenant(tenantSlug)
+	idTenant, deliveryApp, err := ResolverTenant(tenantSlug)
 	if err != nil {
 		return err
 	}

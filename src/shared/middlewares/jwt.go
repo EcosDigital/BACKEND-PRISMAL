@@ -87,6 +87,12 @@ func JWTProtected(c *fiber.Ctx) error {
 		}
 	}
 
+	// EventSource nativo no puede mandar el header Authorization — para el
+	// canal SSE de pedidos el frontend pasa el token por query string.
+	if tokenString == "" {
+		tokenString = c.Query("token")
+	}
+
 	if tokenString == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "token requerired",

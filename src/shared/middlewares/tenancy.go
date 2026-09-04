@@ -16,6 +16,11 @@ func TenancyMiddleware(c *fiber.Ctx) error {
 
 	tenant := c.Get("X-Tenant-ID")
 	if tenant == "" {
+		// EventSource nativo no puede mandar headers custom — para el canal
+		// SSE de pedidos el frontend pasa el tenant por query string.
+		tenant = c.Query("tenant")
+	}
+	if tenant == "" {
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Tenant inválido",
 		})

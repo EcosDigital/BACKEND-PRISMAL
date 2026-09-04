@@ -9,6 +9,7 @@ import (
 	loader "github.com/ecosistema/core/src"
 	"github.com/ecosistema/core/src/core"
 	"github.com/ecosistema/core/src/database"
+	"github.com/ecosistema/core/src/modules/ventas/pedidos"
 	"github.com/ecosistema/core/src/shared/logging"
 	"github.com/ecosistema/core/src/shared/middlewares"
 	"github.com/ecosistema/core/src/shared/utils"
@@ -117,6 +118,12 @@ func main() {
 	//ejecutar migraciones
 	if core.Cfg.TenancyMode == "single" {
 		database.RunMigrations(db)
+	}
+
+	// Avisos de pedidos nuevos en tiempo real (LISTEN/NOTIFY) — solo el
+	// backend multi-tenant mantiene la conexión permanente
+	if core.Cfg.TenancyMode == "multi" {
+		pedidos.StartListener()
 	}
 
 	//app.Use(middlewares.TenancyMiddleware) //tenantMode
