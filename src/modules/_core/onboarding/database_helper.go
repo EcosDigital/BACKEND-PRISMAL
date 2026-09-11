@@ -83,15 +83,32 @@ func ExecuteTenantMigrations(dbName string) error {
 		"024_init.up.sql",
 		"025_init.up.sql",
 		"026_init.up.sql",
+		"028_init.up.sql",
 	}
 
-	// Ruta de las migraciones
-	migrationsPath := "./migrations"
+	// 1) Migraciones compartidas (con exclusión de archivos admin-only)
+	if err := applyMigrationFiles(db, "./migrations", excludedFiles); err != nil {
+		return err
+	}
 
-	// Leer todos los archivos .sql
+	// 2) Migraciones propias del módulo Ventas (schema/tablas que solo
+	//    aplican a tenants operativos — la BD admin nunca lee esta
+	//    carpeta, así que no necesitan lista de exclusión).
+	if err := applyMigrationFiles(db, "./src/modules/ventas/_migrations", nil); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+// applyMigrationFiles ejecuta, en orden alfabético, todos los .sql de
+// migrationsPath sobre db, saltando los nombres listados en excludedFiles.
+func applyMigrationFiles(db *sql.DB, migrationsPath string, excludedFiles []string) error {
+
 	files, err := filepath.Glob(filepath.Join(migrationsPath, "*.sql"))
 	if err != nil {
-		return fmt.Errorf("error leyendo carpeta de migraciones: %v", err)
+		return fmt.Errorf("error leyendo carpeta de migraciones (%s): %v", migrationsPath, err)
 	}
 
 	if len(files) == 0 {

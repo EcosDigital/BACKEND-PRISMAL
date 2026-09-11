@@ -676,3 +676,26 @@ func ListUnidadFuncional(db *gorm.DB) ([]ResultGeneral, error) {
 
 	return results, nil
 }
+
+// === ESTRUCTURA FISICA === //
+func ListEstadoMesa(db *gorm.DB) ([]EstadoMesa, error) {
+	var results []EstadoMesa
+
+	err := db.
+		Table("configuracion.ref_estado_mesa").
+		Select(`
+			id,
+			nombre`).
+		Order("id ASC").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []EstadoMesa{}
+	}
+
+	return results, nil
+}

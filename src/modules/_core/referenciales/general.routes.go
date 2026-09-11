@@ -50,4 +50,7 @@ func SetupRoutes(r fiber.Router) {
 	api.Get("/contabilidad/costos/area", middlewares.JWTProtected, GetAreaCostoController)
 	api.Get("/contabilidad/costos/unidad-funcional", middlewares.JWTProtected, GetUnidadFuncionalController)
 
+	//ESTRUCTURA FISICA
+	api.Get("/EstadoMesa", middlewares.JWTProtected, GetEstadoMesaController)
+
 }

@@ -183,3 +183,10 @@ type ResultGeneral struct {
 	ID     int    `json:"id"`
 	Nombre string `json:"nombre"`
 }
+
+// == ESTRUCTURA FISICA === //
+
+type EstadoMesa struct {
+	ID     int    `json:"id"`
+	Nombre string `json:"nombre"`
+}

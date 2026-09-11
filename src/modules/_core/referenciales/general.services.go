@@ -128,6 +128,11 @@ func GetAreaCosto(db *gorm.DB) ([]ResultGeneral, error) {
 	return ListAreaCosto(db)
 }
 
+// == ESTRUCTURA FISICA === //
+func GetEstadoMesa(db *gorm.DB) ([]EstadoMesa, error) {
+	return ListEstadoMesa(db)
+}
+
 func GetUnidadFuncional(db *gorm.DB) ([]ResultGeneral, error) {
 	return ListUnidadFuncional(db)
 }

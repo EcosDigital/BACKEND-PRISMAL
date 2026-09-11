@@ -3,6 +3,7 @@ package core
 import (
 	asistente "github.com/ecosistema/core/src/modules/_core/asistente_ia"
 	"github.com/ecosistema/core/src/modules/_core/comprobantes"
+	estructurafisica "github.com/ecosistema/core/src/modules/_core/estructura_fisica"
 	empresa "github.com/ecosistema/core/src/modules/_core/gestion_empresa"
 	modular "github.com/ecosistema/core/src/modules/_core/gestion_modular"
 	onboarding "github.com/ecosistema/core/src/modules/_core/onboarding"
@@ -37,6 +38,8 @@ func RegisterCoreRoutes(r fiber.Router) {
 	terceros.Rutas_Terceros(core) //gestion terceros
 	roles.Rutas_Roles(core)       // gestion roles
 	usuarios.Rutas_Usuarios(core) //usuarios
+
+	estructurafisica.Rutas_EstructuraFisica(core) // estructura fisica (mesas)
 
 	gestiones.Rutas_Gestiones(core)
 
