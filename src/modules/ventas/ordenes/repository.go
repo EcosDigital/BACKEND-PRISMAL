@@ -31,39 +31,26 @@ func CreateOrden(db *gorm.DB, req *OrdenRequest) (int64, error) {
 			subtotal += float64(linea.Cantidad) * linea.PrecioUnitario
 		}
 
-		cabecera := map[string]interface{}{
-			"id_estado":          idEstadoSolicitado,
-			"id_mesa":            req.IDMesa,
-			"identificador_mesa": req.IdentificadorMesa,
-			"valor_subtotal":     subtotal,
-			"valor_total":        subtotal,
-			"observaciones":      req.Observaciones,
-			"created_by":         req.UserID,
-			"id_empresa":         req.EmpresaID,
-			"id_sede":            req.SedeID,
-		}
-
-		if err := tx.Table("ventas.mov_ordenes").Create(&cabecera).Error; err != nil {
+		if err := tx.Raw(`
+			INSERT INTO ventas.mov_ordenes
+				(id_estado, id_mesa, identificador_mesa, valor_subtotal, valor_total, observaciones, created_by, id_empresa, id_sede)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+			RETURNING id
+		`, idEstadoSolicitado, req.IDMesa, req.IdentificadorMesa, subtotal, subtotal, req.Observaciones, req.UserID, req.EmpresaID, req.SedeID).
+			Scan(&idOrden).Error; err != nil {
 			return err
 		}
 
-		id, ok := cabecera["id"].(int64)
-		if !ok {
+		if idOrden == 0 {
 			return errors.New("no se pudo obtener el id de la orden creada")
 		}
-		idOrden = id
 
 		for _, linea := range req.Detalle {
-			detalle := map[string]interface{}{
-				"id_orden":           id,
-				"id_articulo_origen": linea.IDArticuloOrigen,
-				"codigo":             linea.Codigo,
-				"nombre":             linea.Nombre,
-				"cantidad":           linea.Cantidad,
-				"precio_unitario":    linea.PrecioUnitario,
-				"observacion":        linea.Observacion,
-			}
-			if err := tx.Table("ventas.mov_ordenes_detalle").Create(&detalle).Error; err != nil {
+			if err := tx.Exec(`
+				INSERT INTO ventas.mov_ordenes_detalle
+					(id_orden, id_articulo_origen, codigo, nombre, cantidad, precio_unitario, observacion)
+				VALUES (?, ?, ?, ?, ?, ?, ?)
+			`, idOrden, linea.IDArticuloOrigen, linea.Codigo, linea.Nombre, linea.Cantidad, linea.PrecioUnitario, linea.Observacion).Error; err != nil {
 				return err
 			}
 		}
