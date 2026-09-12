@@ -163,3 +163,33 @@ func ChangeMesaController(c *fiber.Ctx) error {
 	})
 
 }
+
+// cambiar solo el estado de una mesa (Disponible/Ocupada) con un clic
+func ChangeEstadoMesaController(c *fiber.Ctx) error {
+
+	idParam := c.Params("id")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID invalido"})
+	}
+
+	var req CambiarEstadoMesaRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"Error": "Json invalido",
+		})
+	}
+
+	db, err := utils.GetDB(c)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := EditEstadoMesa(db, id, &req); err != nil {
+		logging.Error.Printf("Hubo un error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "estado actualizado"})
+
+}

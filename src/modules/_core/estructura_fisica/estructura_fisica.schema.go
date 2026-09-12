@@ -10,6 +10,13 @@ type MesaRequest struct {
 	SedeID    int64  `json:"sede_id" validate:"omitempty"`
 }
 
+// CambiarEstadoMesaRequest body del PUT /core/mesas/:id/estado — cambia
+// solo el estado (por id, no por nombre: el frontend ya conoce los ids de
+// configuracion.ref_estado_mesa) sin reenviar codigo/nombre/is_active.
+type CambiarEstadoMesaRequest struct {
+	IDEstado int `json:"id_estado" validate:"required,gt=0"`
+}
+
 type MesaResponse struct {
 	ID       int    `json:"id"`
 	Codigo   string `json:"codigo"`

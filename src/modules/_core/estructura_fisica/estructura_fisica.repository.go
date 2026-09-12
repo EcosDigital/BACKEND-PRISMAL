@@ -157,3 +157,25 @@ func UpdateMesa(db *gorm.DB, id int64, req *MesaRequest) (int64, error) {
 	return id, nil
 
 }
+
+// cambiar solo el estado de una mesa (por id_estado, ya resuelto por el
+// frontend contra configuracion.ref_estado_mesa).
+func UpdateEstadoMesa(db *gorm.DB, id int64, idEstado int) error {
+
+	result := db.Table("configuracion.cfg_mesas").
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"id_estado": idEstado,
+			"update_at": time.Now(),
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+
+}

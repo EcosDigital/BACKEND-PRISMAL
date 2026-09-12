@@ -43,3 +43,19 @@ func EditMesa(db *gorm.DB, id int64, req *MesaRequest) (int64, error) {
 	return UpdateMesa(db, id, req)
 
 }
+
+// cambiar solo el estado de una mesa
+func EditEstadoMesa(db *gorm.DB, id int64, req *CambiarEstadoMesaRequest) error {
+
+	exists, err := ListMesaByID(db, id)
+	if err != nil {
+		return err
+	}
+
+	if len(exists) <= 0 {
+		return errors.New("no se encontró una mesa con ese ID")
+	}
+
+	return UpdateEstadoMesa(db, id, req.IDEstado)
+
+}

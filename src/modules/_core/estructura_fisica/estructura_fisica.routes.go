@@ -26,4 +26,7 @@ func Rutas_EstructuraFisica(r fiber.Router) {
 	protected.Put("/:id",
 		middlewares.VallidateBody(&MesaRequest{}), ChangeMesaController)
 
+	protected.Put("/:id/estado",
+		middlewares.VallidateBody(&CambiarEstadoMesaRequest{}), ChangeEstadoMesaController)
+
 }
