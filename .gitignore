@@ -14,6 +14,9 @@
 .env.*.local
 .env.development
 
+# Credenciales de Firebase (notificaciones push)
+firebase-credentials.json
+
 # Logs
 *.log
 logs/

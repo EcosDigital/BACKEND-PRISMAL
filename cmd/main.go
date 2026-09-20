@@ -10,6 +10,7 @@ import (
 	"github.com/ecosistema/core/src/core"
 	"github.com/ecosistema/core/src/database"
 	"github.com/ecosistema/core/src/modules/ventas/pedidos"
+	"github.com/ecosistema/core/src/shared/integraciones/firebase"
 	"github.com/ecosistema/core/src/shared/logging"
 	"github.com/ecosistema/core/src/shared/middlewares"
 	"github.com/ecosistema/core/src/shared/utils"
@@ -24,6 +25,11 @@ func main() {
 
 	//inicaliar logger
 	logging.InitLogger()
+
+	//conexion con firebase (notificaciones push)
+	if err := firebase.Init(); err != nil {
+		logging.Error.Printf("Firebase no disponible, las notificaciones push quedan inactivas: %v", err)
+	}
 
 	//Crear directorio uploads
 	if err := utils.EnsureUploadDir(); err != nil {

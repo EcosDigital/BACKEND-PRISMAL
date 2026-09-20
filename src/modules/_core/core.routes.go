@@ -6,6 +6,7 @@ import (
 	estructurafisica "github.com/ecosistema/core/src/modules/_core/estructura_fisica"
 	empresa "github.com/ecosistema/core/src/modules/_core/gestion_empresa"
 	modular "github.com/ecosistema/core/src/modules/_core/gestion_modular"
+	"github.com/ecosistema/core/src/modules/_core/notificaciones"
 	onboarding "github.com/ecosistema/core/src/modules/_core/onboarding"
 	"github.com/ecosistema/core/src/modules/_core/referenciales"
 	"github.com/ecosistema/core/src/modules/_core/roles"
@@ -40,6 +41,8 @@ func RegisterCoreRoutes(r fiber.Router) {
 	usuarios.Rutas_Usuarios(core) //usuarios
 
 	estructurafisica.Rutas_EstructuraFisica(core) // estructura fisica (mesas)
+
+	notificaciones.Rutas_Notificaciones(core) // notificaciones push
 
 	gestiones.Rutas_Gestiones(core)
 

@@ -24,6 +24,9 @@ type Config struct {
 	TenancyMode string
 	Jwt_secret  string
 
+	//notificaciones push
+	Firebase_credentials string
+
 	//redis
 	RedisAddr     string
 	RedisPassword string
@@ -68,6 +71,8 @@ func LoadConfig() {
 		Env:         getEnv("APP_ENV", ""),
 		TenancyMode: getEnv("TENANCY_MODE", "single"),
 		Jwt_secret:  getEnv("JWT_SECRET", ""),
+
+		Firebase_credentials: getEnv("FIREBASE_CREDENTIALS", "firebase-credentials.json"),
 	}
 }
 
