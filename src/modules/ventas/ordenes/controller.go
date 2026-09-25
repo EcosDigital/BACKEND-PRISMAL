@@ -46,10 +46,21 @@ func CreateOrdenController(c *fiber.Ctx) error {
 }
 
 // FindOrdenesController GET /ventas/ordenes
+// ?estado=003 devuelve solo las de ese estado (lo usa el panel de órdenes
+// listas para servir); sin el parámetro, la lista completa
 func FindOrdenesController(c *fiber.Ctx) error {
 	db, err := utils.GetDB(c)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if codigoEstado := c.Query("estado"); codigoEstado != "" {
+		results, err := FilterOrdenesByEstado(db, codigoEstado)
+		if err != nil {
+			logging.Error.Printf("Hubo un error: %v", err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.JSON(fiber.Map{"data": results})
 	}
 
 	results, err := FilterOrdenes(db)
@@ -95,6 +106,8 @@ func ChangeEstadoOrdenController(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "JSON inválido"})
 	}
+
+	req.SedeID = int64(middlewares.GetSedeID(c))
 
 	db, err := utils.GetDB(c)
 	if err != nil {

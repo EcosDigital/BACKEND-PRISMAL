@@ -97,12 +97,18 @@ func ListOrigenesDestinatario(db *gorm.DB) ([]OrigenDestinatarioResponse, error)
 // registrar el mensaje de la notificacion
 func CreateNotificacion(db *gorm.DB, req *NotificacionRequest) (int64, error) {
 
+	//sin usuario es una notificacion automatica del sistema
+	var enviadoPor *int64
+	if req.UserID > 0 {
+		enviadoPor = &req.UserID
+	}
+
 	row := NotificacionRow{
 		Titulo:             req.Titulo,
 		Mensaje:            req.Mensaje,
 		IDModuloRef:        req.IDModuloRef,
 		IDTipoNotificacion: req.IDTipoNotificacion,
-		EnviadoPor:         req.UserID,
+		EnviadoPor:         enviadoPor,
 		IDEmpresa:          req.EmpresaID,
 		IDSede:             req.SedeID,
 		CreatedAt:          time.Now(),
@@ -238,17 +244,17 @@ func ListConfigRolesBySede(db *gorm.DB, idSede int64) ([]ConfigRolModulos, error
 
 }
 
-// registrar el reparto de la notificacion. el ON CONFLICT evita duplicar
-// a una misma persona que llegue por dos caminos (ej. dos roles distintos).
-func CreateDestinatarios(db *gorm.DB, idNotificacion int64, idsUsuarios []int64, idOrigen int) error {
+// registrar el reparto de la notificacion con el camino por el que le llega
+// a cada persona. el ON CONFLICT evita duplicar a una misma persona.
+func CreateDestinatarios(db *gorm.DB, idNotificacion int64, destinatarios []destinatario) error {
 
-	rows := make([]map[string]interface{}, 0, len(idsUsuarios))
+	rows := make([]map[string]interface{}, 0, len(destinatarios))
 
-	for _, idUsuario := range idsUsuarios {
+	for _, d := range destinatarios {
 		rows = append(rows, map[string]interface{}{
 			"id_notificacion": idNotificacion,
-			"id_usuario":      idUsuario,
-			"id_origen":       idOrigen,
+			"id_usuario":      d.IDUsuario,
+			"id_origen":       d.IDOrigen,
 			"leido":           false,
 			"created_at":      time.Now(),
 		})

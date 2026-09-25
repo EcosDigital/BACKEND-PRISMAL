@@ -177,3 +177,55 @@ func UpdateEstadoOrden(db *gorm.DB, idOrden int64, codigo, motivo string) error 
 		WHERE id = ?
 	`, nuevoEstado.ID, motivo, idOrden).Error
 }
+
+// consultar las ordenes que estan en un estado, de la mas reciente a la mas
+// antigua. consulta nueva: va con el ORM, no con SQL directo como las de arriba
+func ListOrdenesByEstado(db *gorm.DB, codigoEstado string) ([]OrdenListItem, error) {
+
+	results := make([]OrdenListItem, 0)
+
+	err := db.
+		Table("ventas.mov_ordenes o").
+		Select(`
+			o.id,
+			o.identificador_mesa,
+			e.codigo AS estado_codigo,
+			e.nombre AS estado_nombre,
+			o.valor_total,
+			TO_CHAR(o.created_at, 'YYYY-MM-DD HH24:MI') AS created_at`).
+		Joins("INNER JOIN ventas.ref_estado_orden e ON e.id = o.id_estado").
+		Where("e.codigo = ?", codigoEstado).
+		Order("o.created_at DESC").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+
+}
+
+// consultar el estado actual de la orden y los datos para su aviso
+func GetOrdenAviso(db *gorm.DB, idOrden int64) ([]ordenAviso, error) {
+
+	var results []ordenAviso
+
+	err := db.
+		Table("ventas.mov_ordenes o").
+		Select("e.codigo as estado_codigo, o.identificador_mesa, o.id_empresa, o.id_sede").
+		Joins("INNER JOIN ventas.ref_estado_orden e ON e.id = o.id_estado").
+		Where("o.id = ?", idOrden).
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	if results == nil {
+		results = []ordenAviso{}
+	}
+
+	return results, nil
+
+}

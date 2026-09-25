@@ -30,6 +30,20 @@ type OrigenDestinatarioResponse struct {
 	Nombre string `json:"nombre"`
 }
 
+// un destino de una notificacion: hacia donde va (usuario, rol o modulo,
+// segun notificaciones.ref_origen_destinatario) y el id de esa persona,
+// rol o modulo
+type Destino struct {
+	IDOrigen  int
+	IDDestino int64
+}
+
+// persona que recibe la notificacion y el camino por el que le llega
+type destinatario struct {
+	IDUsuario int64
+	IDOrigen  int
+}
+
 // NotificacionRequest body del POST /core/notificaciones.
 // id_origen define hacia donde va dirigida (usuario, rol o modulo, segun
 // notificaciones.ref_origen_destinatario) e id_destino es el id de esa
@@ -75,14 +89,15 @@ type DestinoResponse struct {
 
 // fila de notificaciones.mov_notificaciones para el insert. se usa estructura
 // y no mapa porque GORM completa el id del registro creado en el campo ID:
-// ese id lo necesita el reparto a los destinatarios
+// ese id lo necesita el reparto a los destinatarios.
+// EnviadoPor nil = notificacion automatica del sistema
 type NotificacionRow struct {
 	ID                 int64     `gorm:"column:id;primaryKey"`
 	Titulo             string    `gorm:"column:titulo"`
 	Mensaje            string    `gorm:"column:mensaje"`
 	IDModuloRef        *int64    `gorm:"column:id_modulo_ref"`
 	IDTipoNotificacion int       `gorm:"column:id_tipo_notificacion"`
-	EnviadoPor         int64     `gorm:"column:enviado_por"`
+	EnviadoPor         *int64    `gorm:"column:enviado_por"`
 	IDEmpresa          int64     `gorm:"column:id_empresa"`
 	IDSede             int64     `gorm:"column:id_sede"`
 	CreatedAt          time.Time `gorm:"column:created_at"`

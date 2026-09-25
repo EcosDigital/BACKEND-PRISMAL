@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"sort"
 
 	"github.com/ecosistema/core/src/modules/_core/roles"
 	"github.com/ecosistema/core/src/shared/integraciones/firebase"
@@ -51,26 +52,77 @@ func RegisterNotificacion(db *gorm.DB, req *NotificacionRequest) (int64, error) 
 	}
 
 	//resolver a quienes les llega
-	idsUsuarios, err := resolverDestinatarios(db, req)
+	idsUsuarios, err := resolverDestinatarios(db, req.SedeID, req.IDOrigen, req.IDDestino)
 	if err != nil {
 		return 0, err
 	}
 
-	if len(idsUsuarios) <= 0 {
+	destinatarios := make([]destinatario, 0, len(idsUsuarios))
+	for _, idUsuario := range idsUsuarios {
+		destinatarios = append(destinatarios, destinatario{IDUsuario: idUsuario, IDOrigen: req.IDOrigen})
+	}
+
+	return guardarYEnviar(db, req, destinatarios)
+
+}
+
+// registrar una notificacion para varios destinos a la vez (ej. dos usuarios
+// y un rol). cada persona recibe una sola notificacion y un solo push aunque
+// llegue por varios destinos. el id_origen e id_destino del req no se usan.
+func RegisterNotificacionMultiple(db *gorm.DB, req *NotificacionRequest, destinos []Destino) (int64, error) {
+
+	//primero usuarios, luego roles y modulos: quien llegue por varios
+	//caminos queda registrado como "Usuario"
+	ordenados := make([]Destino, len(destinos))
+	copy(ordenados, destinos)
+	sort.SliceStable(ordenados, func(i, j int) bool {
+		return ordenados[i].IDOrigen < ordenados[j].IDOrigen
+	})
+
+	destinatarios := make([]destinatario, 0)
+	vistos := make(map[int64]bool)
+
+	for _, d := range ordenados {
+
+		//un destino que no se pueda resolver (ej. un usuario inactivo) no
+		//debe dejar sin aviso a los demas
+		idsUsuarios, err := resolverDestinatarios(db, req.SedeID, d.IDOrigen, d.IDDestino)
+		if err != nil {
+			logging.Error.Printf("destino de notificación omitido (origen %d, id %d): %v", d.IDOrigen, d.IDDestino, err)
+			continue
+		}
+
+		for _, idUsuario := range idsUsuarios {
+			if vistos[idUsuario] {
+				continue
+			}
+			vistos[idUsuario] = true
+			destinatarios = append(destinatarios, destinatario{IDUsuario: idUsuario, IDOrigen: d.IDOrigen})
+		}
+	}
+
+	return guardarYEnviar(db, req, destinatarios)
+
+}
+
+// guardar el mensaje y su reparto en una sola transaccion y enviar el push
+func guardarYEnviar(db *gorm.DB, req *NotificacionRequest, destinatarios []destinatario) (int64, error) {
+
+	if len(destinatarios) <= 0 {
 		return 0, errors.New("no se encontraron destinatarios para esta notificación")
 	}
 
 	//el mensaje y su reparto se guardan juntos, o no se guarda ninguno
 	var idNotificacion int64
 
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err := db.Transaction(func(tx *gorm.DB) error {
 
 		newID, err := CreateNotificacion(tx, req)
 		if err != nil {
 			return err
 		}
 
-		if err := CreateDestinatarios(tx, newID, idsUsuarios, req.IDOrigen); err != nil {
+		if err := CreateDestinatarios(tx, newID, destinatarios); err != nil {
 			return err
 		}
 
@@ -81,6 +133,11 @@ func RegisterNotificacion(db *gorm.DB, req *NotificacionRequest) (int64, error) 
 
 	if err != nil {
 		return 0, err
+	}
+
+	idsUsuarios := make([]int64, 0, len(destinatarios))
+	for _, d := range destinatarios {
+		idsUsuarios = append(idsUsuarios, d.IDUsuario)
 	}
 
 	//el push es el aviso en pantalla; la notificacion ya quedo guardada
@@ -117,12 +174,12 @@ func enviarPush(db *gorm.DB, idsUsuarios []int64, titulo string, mensaje string)
 }
 
 // resolver los usuarios que reciben la notificacion segun el destino elegido
-func resolverDestinatarios(db *gorm.DB, req *NotificacionRequest) ([]int64, error) {
+func resolverDestinatarios(db *gorm.DB, idSede int64, idOrigen int, idDestino int64) ([]int64, error) {
 
-	switch req.IDOrigen {
+	switch idOrigen {
 
 	case OrigenUsuario:
-		exists, err := ListUsuarioActivoByID(db, req.IDDestino)
+		exists, err := ListUsuarioActivoByID(db, idDestino)
 		if err != nil {
 			return nil, err
 		}
@@ -134,10 +191,10 @@ func resolverDestinatarios(db *gorm.DB, req *NotificacionRequest) ([]int64, erro
 		return exists, nil
 
 	case OrigenRol:
-		return ListUsuariosByRoles(db, []int64{req.IDDestino})
+		return ListUsuariosByRoles(db, []int64{idDestino})
 
 	case OrigenModulo:
-		idsRoles, err := rolesConAccesoAModulo(db, req.SedeID, req.IDDestino)
+		idsRoles, err := rolesConAccesoAModulo(db, idSede, idDestino)
 		if err != nil {
 			return nil, err
 		}

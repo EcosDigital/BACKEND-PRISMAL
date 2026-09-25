@@ -26,10 +26,22 @@ type OrdenRequest struct {
 	SedeID            int64                 `json:"sede_id"    validate:"omitempty"`
 }
 
-// CambiarEstadoOrdenRequest body del PUT /ventas/ordenes/:id/estado
+// CambiarEstadoOrdenRequest body del PUT /ventas/ordenes/:id/estado.
+// SedeID lo llena el controller desde el token: es la sede del aviso cuando
+// la orden no tiene una propia
 type CambiarEstadoOrdenRequest struct {
 	CodigoEstado  string `json:"codigo_estado"  validate:"required"`
 	MotivoRechazo string `json:"motivo_rechazo" validate:"omitempty"`
+	SedeID        int64  `json:"sede_id"        validate:"omitempty"`
+}
+
+// estado actual de la orden y los datos que necesita el aviso de
+// "Listo para servir"
+type ordenAviso struct {
+	EstadoCodigo      string `gorm:"column:estado_codigo"`
+	IdentificadorMesa string `gorm:"column:identificador_mesa"`
+	IDEmpresa         int64  `gorm:"column:id_empresa"`
+	IDSede            *int64 `gorm:"column:id_sede"`
 }
 
 // ─── Responses ───────────────────────────────────────────────────────────────

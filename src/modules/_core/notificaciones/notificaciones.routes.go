@@ -41,4 +41,16 @@ func Rutas_Notificaciones(r fiber.Router) {
 	protected.Get("/destinos/roles",
 		FindRolesDestinoController)
 
+	protected.Get("/destinos/usuarios-detalle",
+		FindUsuariosDestinoDetalleController)
+
+	protected.Get("/eventos",
+		FindEventosConfigurablesController)
+
+	protected.Get("/eventos/:codigo/destinatarios",
+		FindDestinatariosEventoController)
+
+	protected.Put("/eventos/:codigo/destinatarios",
+		middlewares.VallidateBody(&DestinatariosEventoRequest{}), SaveDestinatariosEventoController)
+
 }
