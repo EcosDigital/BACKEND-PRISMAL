@@ -24,9 +24,9 @@ func ChatController(c *fiber.Ctx) error {
 		})
 	}
 
-	empresaID := int64(middlewares.GetEmpresaID(c))
+	sedeID := int64(middlewares.GetSedeID(c))
 
-	resultado, err := AskCopilot(db, empresaID, req.Pregunta)
+	resultado, err := AskCopilot(db, sedeID, req.Pregunta)
 	if err != nil {
 		logging.Error.Printf("error en chat del asistente de IA: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

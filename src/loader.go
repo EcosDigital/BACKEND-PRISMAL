@@ -2,6 +2,7 @@ package loader
 
 import (
 	"github.com/ecosistema/core/src/modules/RRHH"
+	"github.com/ecosistema/core/src/modules/agentes"
 	core "github.com/ecosistema/core/src/modules/_core"
 	internal "github.com/ecosistema/core/src/modules/_functions"
 	reports "github.com/ecosistema/core/src/modules/_reports"
@@ -43,4 +44,7 @@ func SetupRoutes(app *fiber.App) {
 
 	//ESPACIO COMERCIAL
 	espacio_comercial.RegisterEspacioComercialRoutes(v1)
+
+	//AGENTES IA
+	agentes.RegisterAgentesRoutes(v1)
 }

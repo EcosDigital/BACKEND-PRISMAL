@@ -86,6 +86,7 @@ func ExecuteTenantMigrations(dbName string) error {
 		"028_init.up.sql",
 		"030_init.up.sql",
 		"031_init.up.sql",
+		"032_init.up.sql",
 	}
 
 	// 1) Migraciones compartidas (con exclusión de archivos admin-only)

@@ -27,6 +27,9 @@ type Config struct {
 	//notificaciones push
 	Firebase_credentials string
 
+	//agentes IA
+	Gemini_api_key string
+
 	//redis
 	RedisAddr     string
 	RedisPassword string
@@ -73,6 +76,8 @@ func LoadConfig() {
 		Jwt_secret:  getEnv("JWT_SECRET", ""),
 
 		Firebase_credentials: getEnv("FIREBASE_CREDENTIALS", "firebase-credentials.json"),
+
+		Gemini_api_key: getEnv("GEMINI_API_KEY", ""),
 	}
 }
 
