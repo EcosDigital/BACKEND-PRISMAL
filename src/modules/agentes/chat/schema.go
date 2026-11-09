@@ -13,3 +13,37 @@ type ChatRequest struct {
 type ChatResponse struct {
 	Respuesta string `json:"respuesta"`
 }
+
+// mensajeMeta es un mensaje dentro del aviso que envía Meta.
+type mensajeMeta struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+	ID   string `json:"id"`
+	Type string `json:"type"`
+	Text struct {
+		Body string `json:"body"`
+	} `json:"text"`
+}
+
+// avisoMeta es lo que Meta envía cuando pasa algo en un número.
+type avisoMeta struct {
+	Entry []struct {
+		Changes []struct {
+			Value struct {
+				Metadata struct {
+					IDTelefono string `json:"phone_number_id"`
+				} `json:"metadata"`
+				Messages      []mensajeMeta `json:"messages"`
+				MessageEchoes []mensajeMeta `json:"message_echoes"`
+			} `json:"value"`
+		} `json:"changes"`
+	} `json:"entry"`
+}
+
+// MensajeWhatsApp es un mensaje de WhatsApp ya leído del aviso de Meta.
+type MensajeWhatsApp struct {
+	IDTelefonoMeta string
+	IDMensajeMeta  string
+	Telefono       string
+	Texto          string
+}

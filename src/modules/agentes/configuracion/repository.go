@@ -2,6 +2,7 @@ package configuracion
 
 import (
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"gorm.io/gorm"
@@ -161,6 +162,94 @@ func ExistsEncargadoActivo(db *gorm.DB, idModuloRef int64, excluirID int64) (boo
 	err := db.
 		Table("agentes.cfg_agentes").
 		Where("id_modulo_ref = ? AND is_active = true AND id <> ?", idModuloRef, excluirID).
+		Count(&count).Error
+
+	return count > 0, err
+
+}
+
+// consultar la sede a la que pertenece el agente
+func GetSedeAgente(db *gorm.DB, id int64) (int64, error) {
+
+	var sede int64
+
+	err := db.
+		Table("agentes.cfg_agentes").
+		Select("COALESCE(id_sede, 0)").
+		Where("id = ?", id).
+		Scan(&sede).Error
+
+	return sede, err
+
+}
+
+// guardar los datos de WhatsApp del agente
+func GuardarWhatsAppAgente(db *gorm.DB, id int64, conexion ConexionWhatsApp, userID int64) error {
+
+	conexionJSON, err := json.Marshal(conexion)
+	if err != nil {
+		return err
+	}
+
+	resultado := db.Exec(`
+		UPDATE agentes.cfg_agentes
+		SET details = jsonb_set(details, '{whatsapp}', ?::jsonb), update_at = NOW(), update_by = ?
+		WHERE id = ?`,
+		string(conexionJSON), userID, id)
+
+	if resultado.Error != nil {
+		return resultado.Error
+	}
+
+	if resultado.RowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+
+}
+
+// consultar el agente que atiende un número de WhatsApp conectado
+func FilterAgentePorTelefonoMeta(db *gorm.DB, idTelefonoMeta string) ([]AgenteWhatsApp, error) {
+
+	filtro, err := json.Marshal(map[string]interface{}{
+		"whatsapp": map[string]interface{}{"id_telefono_meta": idTelefonoMeta, "conectado": true},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var results []AgenteWhatsApp
+
+	err = db.
+		Table("agentes.cfg_agentes").
+		Select(`
+			id, nombre, instrucciones, modelo, is_active,
+			id_empresa AS empresa_id,
+			COALESCE(id_sede, 0) AS sede_id,
+			details->'whatsapp'->>'llave_cifrada' AS llave_cifrada`).
+		Where("details @> ?::jsonb", string(filtro)).
+		Scan(&results).Error
+
+	return results, err
+
+}
+
+// verificar si el número ya está conectado a otro agente
+func ExistsTelefonoEnOtroAgente(db *gorm.DB, idTelefonoMeta string, excluirID int64) (bool, error) {
+
+	filtro, err := json.Marshal(map[string]interface{}{
+		"whatsapp": map[string]interface{}{"id_telefono_meta": idTelefonoMeta, "conectado": true},
+	})
+	if err != nil {
+		return false, err
+	}
+
+	var count int64
+
+	err = db.
+		Table("agentes.cfg_agentes").
+		Where("details @> ?::jsonb AND id <> ?", string(filtro), excluirID).
 		Count(&count).Error
 
 	return count > 0, err

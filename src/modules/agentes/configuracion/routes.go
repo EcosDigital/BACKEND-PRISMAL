@@ -20,6 +20,9 @@ func Rutas_configuracion(r fiber.Router) {
 	protected.Get("/modulos",
 		FindModulosInstaladosController)
 
+	protected.Post("/:id/whatsapp",
+		middlewares.VallidateBody(&ConectarWhatsAppRequest{}), ConectarWhatsAppController)
+
 	protected.Get("/:id",
 		FindAgenteByIDController)
 

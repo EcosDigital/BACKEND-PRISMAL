@@ -25,3 +25,34 @@ type ModuloResponse struct {
 	ID     int    `json:"id"`
 	Nombre string `json:"nombre"`
 }
+
+// ConexionWhatsApp es lo que se guarda dentro de "details".
+type ConexionWhatsApp struct {
+	Telefono       string `json:"telefono"`
+	IDTelefonoMeta string `json:"id_telefono_meta"`
+	IDCuentaMeta   string `json:"id_cuenta_meta"`
+	LlaveCifrada   string `json:"llave_cifrada"`
+	Conectado      bool   `json:"conectado"`
+}
+
+// AgenteWhatsApp es el agente que atiende un número conectado.
+type AgenteWhatsApp struct {
+	ID            int
+	Nombre        string
+	Instrucciones string
+	Modelo        string
+	IsActive      bool
+	EmpresaID     int64
+	SedeID        int64
+	LlaveCifrada  string
+}
+
+// ConectarWhatsAppRequest es lo que entrega la ventana de Meta al terminar.
+type ConectarWhatsAppRequest struct {
+	Codigo         string `json:"codigo"           validate:"required"`
+	IDTelefonoMeta string `json:"id_telefono_meta" validate:"required"`
+	IDCuentaMeta   string `json:"id_cuenta_meta"   validate:"required"`
+	Coexistencia   bool   `json:"coexistencia"`
+	UserID         int64  `json:"user_id"          validate:"omitempty"`
+	TenantSlug     string `json:"-"`
+}

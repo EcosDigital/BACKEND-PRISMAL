@@ -7,6 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// minutosPausaDueno es el tiempo que el agente se calla en un chat después
+// de que el dueño escribe en él.
+const minutosPausaDueno = 30
+
 // registrar mensaje (de la persona o de la IA)
 func CreateMensaje(db *gorm.DB, mensaje string, esIA bool, detalle map[string]interface{}, empresaID int64) error {
 
@@ -54,5 +58,48 @@ func ListUltimosMensajes(db *gorm.DB, filtro map[string]interface{}, limite int)
 	}
 
 	return mensajes, nil
+
+}
+
+// verificar si un mensaje de Meta ya se recibió antes
+func ExistsMensajeMeta(db *gorm.DB, idMensajeMeta string) (bool, error) {
+
+	filtro, err := json.Marshal(map[string]interface{}{"id_mensaje_meta": idMensajeMeta})
+	if err != nil {
+		return false, err
+	}
+
+	var count int64
+
+	err = db.
+		Table("agentes.mov_mensajes").
+		Where("detalle @> ?::jsonb", string(filtro)).
+		Count(&count).Error
+
+	return count > 0, err
+
+}
+
+// verificar si el dueño escribió hace poco en ese chat de WhatsApp
+func ExistsPausaDueno(db *gorm.DB, idAgente int, telefono string) (bool, error) {
+
+	filtro, err := json.Marshal(map[string]interface{}{
+		"id_agente": idAgente,
+		"origen":    "whatsapp",
+		"telefono":  telefono,
+		"autor":     "dueno",
+	})
+	if err != nil {
+		return false, err
+	}
+
+	var count int64
+
+	err = db.
+		Table("agentes.mov_mensajes").
+		Where("detalle @> ?::jsonb AND created_at > NOW() - make_interval(mins => ?)", string(filtro), minutosPausaDueno).
+		Count(&count).Error
+
+	return count > 0, err
 
 }

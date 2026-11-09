@@ -30,6 +30,14 @@ type Config struct {
 	//agentes IA
 	Gemini_api_key string
 
+	//whatsapp (Meta)
+	Meta_app_id       string
+	Meta_app_secret   string
+	Meta_verify_token string
+
+	Whatsapp_clave_cifrado string
+	Tenant_domain          string
+
 	//redis
 	RedisAddr     string
 	RedisPassword string
@@ -62,8 +70,8 @@ func LoadConfig() {
 		// hacia este backend (ej. https://prismar.org o https://api.prismar.org),
 		// sin "/" al final.
 		Backend_public_url: getEnv("BACKEND_PUBLIC_URL", "http://localhost"+backendPort),
-		Frontend_url:        getEnv("FRONTEND_URL", "*"),
-		Allow_subdomains:    getEnvBool("ALLOW_SUBDOMAINS", false),
+		Frontend_url:       getEnv("FRONTEND_URL", "*"),
+		Allow_subdomains:   getEnvBool("ALLOW_SUBDOMAINS", false),
 
 		Db_host: getEnv("DB_HOST", ""),
 		Db_port: getEnv("DB_PORT", ""),
@@ -78,6 +86,13 @@ func LoadConfig() {
 		Firebase_credentials: getEnv("FIREBASE_CREDENTIALS", "firebase-credentials.json"),
 
 		Gemini_api_key: getEnv("GEMINI_API_KEY", ""),
+
+		Meta_app_id:       getEnv("META_APP_ID", ""),
+		Meta_app_secret:   getEnv("META_APP_SECRET", ""),
+		Meta_verify_token: getEnv("META_VERIFY_TOKEN", ""),
+
+		Whatsapp_clave_cifrado: getEnv("WHATSAPP_CLAVE_CIFRADO", ""),
+		Tenant_domain:          getEnv("TENANT_DOMAIN", "prismar.org"),
 	}
 }
 
