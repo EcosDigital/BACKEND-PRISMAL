@@ -15,6 +15,7 @@ import (
 	"github.com/ecosistema/core/src/modules/_core/terceros"
 	uploads "github.com/ecosistema/core/src/modules/_core/up"
 	"github.com/ecosistema/core/src/modules/_core/usuarios"
+	"github.com/ecosistema/core/src/modules/_core/usuarios/tokens"
 	"github.com/ecosistema/core/src/modules/gestiones"
 	"github.com/gofiber/fiber/v2"
 )
@@ -38,6 +39,7 @@ func RegisterCoreRoutes(r fiber.Router) {
 
 	terceros.Rutas_Terceros(core) //gestion terceros
 	roles.Rutas_Roles(core)       // gestion roles
+	tokens.Rutas_Tokens(core)     // tokens de conexión (antes de /users/:id)
 	usuarios.Rutas_Usuarios(core) //usuarios
 
 	estructurafisica.Rutas_EstructuraFisica(core) // estructura fisica (mesas)
